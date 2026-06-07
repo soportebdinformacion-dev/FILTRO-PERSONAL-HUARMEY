@@ -3,216 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agricola Huarmey - Portal de Consulta y Convocatoria</title>
-    <!-- Tailwind CSS -->
+    <title>Agrícola Huarmey - Portal de Consulta y Convocatoria</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- SheetJS (Excel Export) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- jsPDF & autoTable (PDF Export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f4f6f8;
-        }
-        .brand-green { color: #4CAF50; }
-        .brand-bg-green { background-color: #2E7D32; }
-        .brand-bg-green-hover { background-color: #1B5E20; }
-        .brand-red { color: #D32F2F; }
-        .brand-bg-red { background-color: #D32F2F; }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
     </style>
 </head>
 <body class="text-gray-800 antialiased">
 
-    <!-- TOP HEADER / BANNER DE LA EMPRESA -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="bg-white shadow-sm border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <!-- SVG Dinámico inspirado en el Logotipo de Agrícola Huarmey -->
-                <div class="w-16 h-16 flex-shrink-0">
-                    <svg viewBox="0 0 100 100" class="w-full h-full">
-                        <!-- Círculo central estilizado en franjas rojas (fruto) -->
-                        <path d="M50,25 C65,25 75,35 75,50 C75,65 65,75 50,75 C35,75 25,65 25,50 C25,35 35,25 50,25" fill="none" stroke="#D32F2F" stroke-width="8" stroke-dasharray="14 6"/>
-                        <!-- Órbitas verdes que envuelven el fruto -->
-                        <path d="M20,50 Q35,20 50,25 Q65,30 50,80 Q35,75 20,50" fill="none" stroke="#2E7D32" stroke-width="4"/>
-                        <!-- Hoja verde superior -->
-                        <path d="M50,25 C50,10 65,5 70,10 C70,25 55,25 50,25" fill="#2E7D32"/>
-                        <path d="M50,25 Q60,15 70,10" fill="none" stroke="#ffffff" stroke-width="1.5"/>
-                    </svg>
+                <div class="w-14 h-14 bg-emerald-700 text-white flex items-center justify-center rounded-xl font-bold text-xl shadow-md">
+                    AH
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900">Agrícola Huarmey</h1>
-                    <p class="text-xs text-gray-500 font-medium tracking-wider uppercase">Sistema de Gestión, Filtro y Convocatoria de Personal</p>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Agrícola Huarmey</h1>
+                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Sistema de Consulta, Monitoreo y Convocatoria de Personal</p>
                 </div>
             </div>
-            <!-- Indicador de Sincronización en Tiempo Real -->
-            <div class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-green-200">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                Conectado a Base de Datos Central
+            <div id="connection-status" class="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Cargando interfaz...</span>
             </div>
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
         
-        <!-- DASHBOARD INDICADORES -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Card 1: Total Registrados -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Total Evaluados</p>
-                    <h3 id="stat-total" class="text-3xl font-bold text-gray-800">0</h3>
-                    <p class="text-xs text-gray-500">Base Histórica General</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-xl text-gray-500">
-                    <i class="fa-solid fa-users text-2xl"></i>
-                </div>
-            </div>
-
-            <!-- Card 2: Aptos (Excelentes o Estables) -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Rendimiento Alto</p>
-                    <h3 id="stat-aptos" class="text-3xl font-bold text-green-600">0</h3>
-                    <p class="text-xs text-green-600 font-medium">✨ Producción Óptima</p>
-                </div>
-                <div class="p-4 bg-green-50 rounded-xl text-green-600">
-                    <i class="fa-solid fa-circle-check text-2xl"></i>
-                </div>
-            </div>
-
-            <!-- Card 3: Convocatorias Realizadas -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Días Trabajados Prom.</p>
-                    <h3 id="stat-promedio-dias" class="text-3xl font-bold text-blue-600">0</h3>
-                    <p class="text-xs text-gray-500">Persistencia en campo</p>
-                </div>
-                <div class="p-4 bg-blue-50 rounded-xl text-blue-600">
-                    <i class="fa-solid fa-calendar-day text-2xl"></i>
-                </div>
-            </div>
-
-            <!-- Card 4: Producción Acumulada KG -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:shadow-md">
-                <div class="space-y-1">
-                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Total Cosechado</p>
-                    <h3 id="stat-total-kg" class="text-3xl font-bold text-amber-600">0 <span class="text-sm font-normal text-gray-400">KG</span></h3>
-                    <p class="text-xs text-gray-500">Suma total de la muestra</p>
-                </div>
-                <div class="p-4 bg-amber-50 rounded-xl text-amber-600">
-                    <i class="fa-solid fa-basket-shopping text-2xl"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN GRÁFICOS Y DISTRIBUCIONES -->
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-                <div class="flex items-center justify-between mb-4">
-                    <h4 class="font-semibold text-gray-700 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-bar text-green-600"></i> Distribución de Rendimiento por Trabajador (KG Totales)
-                    </h4>
-                </div>
-                <div class="relative h-64">
-                    <canvas id="chartRendimiento"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <h4 class="font-semibold text-gray-700 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-red-600"></i> Clasificación de Personal
-                    </h4>
-                </div>
-                <div class="relative h-64 flex items-center justify-center">
-                    <canvas id="chartClasificacion"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- PANEL DE FILTROS AVANZADOS Y BÚSQUEDA -->
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-emerald-600"></i> Criterios de Búsqueda y Selección
-                    </h3>
-                    <p class="text-xs text-gray-500">Filtra la base de datos en tiempo real para optimizar la convocatoria de personal</p>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Evaluados</p>
+                    <h3 id="stat-total" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
                 </div>
-                <!-- Botones de Exportación -->
-                <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-sm shadow-emerald-100">
-                        <i class="fa-solid fa-file-excel text-sm"></i> Exportar Excel
+                <div class="p-3 bg-slate-50 text-slate-500 rounded-xl"><i class="fa-solid fa-users text-xl"></i></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rendimiento Alto</p>
+                    <h3 id="stat-excelente" class="text-3xl font-bold text-emerald-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Días Promedio</p>
+                    <h3 id="stat-prom-dias" class="text-3xl font-bold text-blue-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-calendar text-xl"></i></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Cosechado</p>
+                    <h3 id="stat-total-kg" class="text-2xl font-bold text-amber-600 mt-1">0 <span class="text-xs font-normal text-slate-400">KG</span></h3>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-basket-shopping text-xl"></i></div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+                <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-bar text-emerald-600"></i> Producción por Trabajador (Muestra de Datos)
+                </h4>
+                <div class="relative h-60"><canvas id="chartRendimiento"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-red-600"></i> Segmentación por Estado de Rendimiento
+                </h4>
+                <div class="relative h-60 flex items-center justify-center"><canvas id="chartClasificacion"></canvas></div>
+            </div>
+        </section>
+
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">Filtros Avanzados de Personal</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Búsqueda reactiva por DNI, Nombre, Ruta o Desempeño</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-file-excel"></i> Excel
                     </button>
-                    <button onclick="exportToPDF()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-sm shadow-red-100">
-                        <i class="fa-solid fa-file-pdf text-sm"></i> Exportar PDF
+                    <button onclick="exportToPDF()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-file-pdf"></i> PDF
                     </button>
-                    <button onclick="loadDataFromServer()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition">
-                        <i class="fa-solid fa-rotate text-sm"></i> Refrescar Datos
+                    <button onclick="fetchSheetData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate"></i> Actualizar
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Búsqueda Global -->
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Buscar por DNI o Nombre</label>
-                    <div class="relative">
-                        <input type="text" id="search-input" oninput="applyFilters()" placeholder="Ej: 73443580..." class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-gray-400 text-xs"></i>
-                    </div>
+                    <label class="text-[11px] font-bold text-slate-500 uppercase">Buscar Trabajador</label>
+                    <input type="text" id="search-input" placeholder="Buscar por DNI o Nombre..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                 </div>
-
-                <!-- Filtro de Condición CC -->
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Condición de Ruta</label>
-                    <select id="filter-condicion" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase">Condición de Ruta</label>
+                    <select id="filter-condicion" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
                         <option value="IDA Y VUELTA">IDA Y VUELTA</option>
+                        <option value="CAMPAMENTO">CAMPAMENTO</option>
                     </select>
                 </div>
-
-                <!-- Filtro de Clasificación -->
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Clasificación Rendimiento</label>
-                    <select id="filter-clasificacion" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase">Clasificación Interna</label>
+                    <select id="filter-clasificacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
-                        <option value="EXCELENTE">AMBER / EXCELENTE (>=45)</option>
-                        <option value="ESTABLE">>= 30 a < 38</option>
-                        <option value="MALO">< 30, MALO</option>
+                        <option value="EXCELENTE">EXCELENTE</option>
+                        <option value="BUENO">BUENO</option>
+                        <option value="REGULAR">REGULAR</option>
+                        <option value="MALO">MALO</option>
                     </select>
                 </div>
-
-                <!-- Filtro Rango de Días -->
                 <div class="space-y-1">
-                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rango de Días Laborados</label>
-                    <select id="filter-rango-dias" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase">Permanencia</label>
+                    <select id="filter-rango" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
                         <option value="1. <30 DÍAS">1. <30 DÍAS</option>
                     </select>
@@ -220,216 +136,169 @@
             </div>
         </section>
 
-        <!-- TABLA DINÁMICA DE TRABAJADORES -->
-        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Registros obtenidos de la Base de Datos</span>
-                <span id="table-counter" class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Mostrando 0 de 0 trabajadores</span>
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-4 bg-slate-50/60 border-b border-slate-100 flex justify-between items-center text-xs font-semibold text-slate-500">
+                <span>CONSOLIDADO DE SEGUIMIENTO</span>
+                <span id="table-counter">Mostrando 0 trabajadores</span>
             </div>
-            
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-gray-800 text-white text-xs font-semibold uppercase tracking-wider">
-                            <th class="py-3 px-4 text-center">Acción Convocatoria</th>
-                            <th class="py-3 px-4 cursor-pointer" onclick="sortTable('dni')">DNI <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer" onclick="sortTable('nombre')">Nombre Trabajador <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer text-center" onclick="sortTable('condicion')">Condición CC <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer text-right" onclick="sortTable('dias')">Días Laborados <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer text-right" onclick="sortTable('total_kg')">Total KG <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer text-center" onclick="sortTable('rango_dias')">Rango Días <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 cursor-pointer text-center" onclick="sortTable('clasificacion')">Clasificación <i class="fa-solid fa-sort ml-1 opacity-50"></i></th>
-                            <th class="py-3 px-4 text-center">Celular Contacto</th>
+                        <tr class="bg-slate-800 text-white text-xs font-medium uppercase tracking-wider">
+                            <th class="py-3.5 px-4 text-center">Convocatoria</th>
+                            <th class="py-3.5 px-4 cursor-pointer" onclick="sortTable('dni')">DNI / RUT <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 cursor-pointer" onclick="sortTable('nombre')">Nombre Completo <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 text-center">Condición</th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('dias')">Días <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('total_kg')">Total KG <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 text-center">Clasificación</th>
+                            <th class="py-3.5 px-4 text-center">Celular</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-gray-100 text-sm text-gray-700">
-                        <!-- El esqueleto de carga se sustituye dinámicamente -->
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="9" class="py-12 text-center text-gray-400">
-                                <i class="fa-solid fa-circle-notch animate-spin text-2xl text-green-600 mb-2"></i>
-                                <p class="text-xs font-medium">Cargando base de datos activa de Agrícola Huarmey...</p>
+                            <td colspan="8" class="py-12 text-center text-slate-400 text-xs font-medium">
+                                <i class="fa-solid fa-circle-notch animate-spin text-xl text-emerald-600 mb-2"></i>
+                                <p>Sincronizando con base de datos de Google Sheets...</p>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- PAGINACIÓN -->
-            <div class="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-xs text-gray-500">
-                    Filas por página: 
-                    <select id="rows-per-page" onchange="changeRowsPerPage()" class="bg-white border border-gray-200 rounded px-1.5 py-0.5 focus:outline-none">
-                        <option value="10">10</option>
-                        <option value="25" selected>25</option>
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                <div class="text-slate-500">
+                    Registros por página:
+                    <select id="rows-per-page" class="bg-white border rounded p-1 ml-1 focus:outline-none">
+                        <option value="15">15</option>
+                        <option value="30" selected>30</option>
                         <option value="50">50</option>
-                        <option value="100">100</option>
                     </select>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="prevPage()" class="p-2 rounded-lg hover:bg-gray-200 text-gray-600 disabled:opacity-30 disabled:pointer-events-none transition">
-                        <i class="fa-solid fa-chevron-left text-xs"></i> Anterior
-                    </button>
-                    <span id="page-indicator" class="text-xs font-semibold px-3 text-gray-600">Página 1 de 1</span>
-                    <button onclick="nextPage()" class="p-2 rounded-lg hover:bg-gray-200 text-gray-600 disabled:opacity-30 disabled:pointer-events-none transition">
-                        Siguiente <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="prevPage()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition">Anterior</button>
+                    <span id="page-indicator" class="font-semibold text-slate-600">Página 1 de 1</span>
+                    <button onclick="nextPage()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition">Siguiente</button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- CONFIGURACIÓN FLOTANTE (Para cambiar el endpoint de Apps Script fácilmente) -->
-    <div class="fixed bottom-4 right-4 z-50">
-        <button onclick="toggleConfigModal()" class="bg-gray-800 hover:bg-gray-900 text-white p-3.5 rounded-full shadow-lg flex items-center justify-center transition">
-            <i class="fa-solid fa-gear text-lg"></i>
+    <div class="fixed bottom-5 right-5">
+        <button onclick="openConfig()" class="bg-slate-800 hover:bg-slate-900 text-white p-3.5 rounded-full shadow-xl transition">
+            <i class="fa-solid fa-gear text-base"></i>
         </button>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN -->
-    <div id="config-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
-            <div class="flex items-center justify-between border-b pb-2">
-                <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-link text-green-600"></i> Conexión de Apps Script
-                </h3>
-                <button onclick="toggleConfigModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-gray-600 uppercase">URL del Web App de Google Apps Script</label>
-                <input type="text" id="endpoint-url" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="https://script.google.com/macros/s/.../exec">
-                <p class="text-[11px] text-gray-400 leading-relaxed">Pega la URL obtenida al momento de implementar ("Deploy") tu script como Aplicación Web con acceso para 'Cualquiera' (Anyone).</p>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="toggleConfigModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition">Cancelar</button>
-                <button onclick="saveEndpoint()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-xl transition shadow-sm">Guardar y Recargar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- INSERCIÓN DE JAVASCRIPT DIRECTO PARA LOGIC INTEGRATION -->
     <script>
-        // CONFIGURACIÓN INICIAL & ENDPOINT DE RESPALDO / SIMULACIÓN
-        let DEFAULT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzw-YUGcG_rMuLFI9lSprWdj4Tb0O5BnZrjXLjeqY6jQFinHwJk9CTkYEiKJRFM5Qgy/exec"; // Reemplazar con el real
-        let appEndpoint = localStorage.getItem("agricola_huarmey_url") || DEFAULT_ENDPOINT;
-
-        // ESTADO DE LA APLICACIÓN
-        let rawWorkersData = [];
-        let filteredWorkersData = [];
+        // URL de tu Apps Script actual (Guardada automáticamente en LocalStorage)
+        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbz_M-T636NenLzF-f_g99S9B7V9z3P-U12345/exec";
+        
+        let workers = [];
+        let filteredWorkers = [];
         let currentPage = 1;
-        let rowsPerPage = 25;
-        let currentSort = { column: null, direction: 'asc' };
-
-        // Gráficos de Chart.js
-        let chartRendimientoInstance = null;
-        let chartClasificacionInstance = null;
-
-        // Muestra estática exacta obtenida de la captura de pantalla por si el WebApp falla o no está configurado aún
-        const backupMockData = [
-            { rut: "77246212", condicion: "IDA Y VUELTA", nombre: "WILSON RAFAEL", dias: 1, total_kg: 18, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "77246212", celular: "963705172" },
-            { rut: "77247103", condicion: "IDA Y VUELTA", nombre: "ERNESTO MARIO", dias: 1, total_kg: 28, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "77247103", celular: "963705172" },
-            { rut: "43397965", condicion: "IDA Y VUELTA", nombre: "LILIANA MORALES", dias: 1, total_kg: 27, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "43397965", celular: "963705172" },
-            { rut: "77818243", condicion: "IDA Y VUELTA", nombre: "CELESTINA DEI", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "77818243", celular: "963705172" },
-            { rut: "46917606", condicion: "IDA Y VUELTA", nombre: "JOSE LUIS HUMANI", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "46917606", celular: "963705172" },
-            { rut: "73443580", condicion: "IDA Y VUELTA", nombre: "RIQUELMER SANTOS", dias: 1, total_kg: 46, rango_dias: "1. <30 DÍAS", clasificacion: ">=45, EXCELENTE", dni: "73443580", celular: "963705172" },
-            { rut: "61354064", condicion: "IDA Y VUELTA", nombre: "HILDER VIDAL", dias: 1, total_kg: 37, rango_dias: "1. <30 DÍAS", clasificacion: ">= 30 a < 38", dni: "61354064", celular: "963705172" },
-            { rut: "17448055", condicion: "IDA Y VUELTA", nombre: "SANTA ISABEL", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "17448055", celular: "963705172" },
-            { rut: "40054689", condicion: "IDA Y VUELTA", nombre: "JANET JULIA CH", dias: 1, total_kg: 23, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "40054689", celular: "963705172" },
-            { rut: "40641755", condicion: "IDA Y VUELTA", nombre: "YOVANNA MARI", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "40641755", celular: "963705172" },
-            { rut: "47859006", condicion: "IDA Y VUELTA", nombre: "CLAUDIA ESTHER", dias: 1, total_kg: 30, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "47859006", celular: "963705172" },
-            { rut: "73664059", condicion: "IDA Y VUELTA", nombre: "EDINSON LUGO", dias: 1, total_kg: 26, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "73664059", celular: "963705172" },
-            { rut: "44359014", condicion: "IDA Y VUELTA", nombre: "ALEX JAVIER C", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "44359014", celular: "963705172" },
-            { rut: "46660156", condicion: "IDA Y VUELTA", nombre: "ROBERTO RIOJ", dias: 1, total_kg: 20, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "46660156", celular: "963705172" },
-            { rut: "76785901", condicion: "IDA Y VUELTA", nombre: "MELBA MARISOL", dias: 1, total_kg: 19, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "76785901", celular: "963705172" },
-            { rut: "78115125", condicion: "IDA Y VUELTA", nombre: "JORGE LUIS SA", dias: 1, total_kg: 13, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "78115125", celular: "963705172" },
-            { rut: "17603054", condicion: "IDA Y VUELTA", nombre: "SOLANO ESPINOZA", dias: 1, total_kg: 21, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "17603054", celular: "963705172" },
-            { rut: "76337773", condicion: "IDA Y VUELTA", nombre: "MARIO RAFAEL", dias: 1, total_kg: 21, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "76337773", celular: "963705172" },
-            { rut: "72482665", condicion: "IDA Y VUELTA", nombre: "ROYSER HUANCA", dias: 1, total_kg: 25, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "72482665", celular: "963705172" },
-            { rut: "61229680", condicion: "IDA Y VUELTA", nombre: "ELMER REYES", dias: 1, total_kg: 38, rango_dias: "1. <30 DÍAS", clasificacion: ">= 30 a < 38", dni: "61229680", celular: "963705172" },
-            { rut: "76661515", condicion: "IDA Y VUELTA", nombre: "PABLO ALBERTO", dias: 1, total_kg: 16, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "76661515", celular: "963705172" },
-            { rut: "72532620", condicion: "IDA Y VUELTA", nombre: "AMIR HUANCAS", dias: 1, total_kg: 24, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "72532620", celular: "963705172" },
-            { rut: "73710367", condicion: "IDA Y VUELTA", nombre: "MERLY JARAMILLO", dias: 1, total_kg: 17, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "73710367", celular: "963705172" },
-            { rut: "73447778", condicion: "IDA Y VUELTA", nombre: "JUAN SALVADOR", dias: 1, total_kg: 34, rango_dias: "1. <30 DÍAS", clasificacion: ">= 30 a < 38", dni: "73447778", celular: "963705172" },
-            { rut: "72511320", condicion: "IDA Y VUELTA", nombre: "HERNANDEZ HI", dias: 1, total_kg: 18, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "72511320", celular: "963705172" },
-            { rut: "42136432", condicion: "IDA Y VUELTA", nombre: "CAROLINA VALI", dias: 1, total_kg: 22, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "42136432", celular: "963705172" },
-            { rut: "75718219", condicion: "IDA Y VUELTA", nombre: "ZOILA ERMELINDA", dias: 1, total_kg: 18, rango_dias: "1. <30 DÍAS", clasificacion: "<30, MALO", dni: "75718219", celular: "963705172" }
-        ];
+        let rowsPerPage = 30;
+        let activeSort = { col: null, dir: 'asc' };
+        
+        let chartRendimiento = null;
+        let chartClasificacion = null;
 
         window.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("endpoint-url").value = appEndpoint;
-            loadDataFromServer();
+            // Asignar listeners nativos para evitar que dejen de responder
+            document.getElementById("search-input").addEventListener("input", applyFilters);
+            document.getElementById("filter-condicion").addEventListener("change", applyFilters);
+            document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
+            document.getElementById("filter-rango").addEventListener("change", applyFilters);
+            document.getElementById("rows-per-page").addEventListener("change", changeRowsPerPage);
+            
+            fetchSheetData();
         });
 
-        function toggleConfigModal() {
-            const modal = document.getElementById("config-modal");
-            modal.classList.toggle("hidden");
-            modal.classList.toggle("flex");
+        function openConfig() {
+            Swal.fire({
+                title: 'Configurar URL de Google Apps Script',
+                input: 'url',
+                inputLabel: 'Pega la URL de ejecución generada (/exec)',
+                inputValue: currentEndpoint,
+                showCancelButton: true,
+                confirmButtonColor: '#2E7D32',
+                confirmButtonText: 'Conectar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    localStorage.setItem("huarmey_endpoint", result.value.trim());
+                    currentEndpoint = result.value.trim();
+                    fetchSheetData();
+                }
+            });
         }
 
-        function saveEndpoint() {
-            const url = document.getElementById("endpoint-url").value.trim();
-            if(url) {
-                localStorage.setItem("agricola_huarmey_url", url);
-                appEndpoint = url;
-                toggleConfigModal();
-                loadDataFromServer();
-            }
-        }
+        function fetchSheetData() {
+            const statusIndicator = document.getElementById("connection-status");
+            statusIndicator.className = "flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200";
+            statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>Conectando...`;
 
-        // CARGA INTELIGENTE DESDE GOOGLE APPS SCRIPT O FALLBACK LOCAL
-        function loadDataFromServer() {
-            if (!appEndpoint || appEndpoint === DEFAULT_ENDPOINT) {
-                // Si es la URL por defecto, inicializamos con los datos adjuntos de la captura para simulación perfecta e inmediata
-                rawWorkersData = [...backupMockData];
-                filteredWorkersData = [...rawWorkersData];
-                updateDashboardStats();
-                applyFilters();
-                initCharts();
-                return;
-            }
-
-            fetch(appEndpoint)
-                .then(response => response.json())
+            fetch(currentEndpoint)
+                .then(res => {
+                    if (!res.ok) throw new Error("Error de Red");
+                    return res.json();
+                })
                 .then(data => {
-                    if (data && data.length > 0) {
-                        rawWorkersData = data;
-                    } else {
-                        rawWorkersData = [...backupMockData];
-                    }
-                    filteredWorkersData = [...rawWorkersData];
-                    updateDashboardStats();
+                    workers = data;
+                    filteredWorkers = [...workers];
+                    
+                    statusIndicator.className = "flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200";
+                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Sincronizado`;
+                    
+                    calculateMetrics();
                     applyFilters();
-                    initCharts();
+                    renderCharts();
                 })
                 .catch(err => {
-                    console.warn("Apps Script Web App no configurado u origin bloqueado. Utilizando datos de la tabla estructurada adjunta.");
-                    rawWorkersData = [...backupMockData];
-                    filteredWorkersData = [...rawWorkersData];
-                    updateDashboardStats();
-                    applyFilters();
-                    initCharts();
+                    console.error(err);
+                    statusIndicator.className = "flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-200";
+                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span>Error de Conexión`;
+                    
+                    Swal.fire({
+                        title: 'Aviso de Configuración',
+                        text: 'Verifica la URL ingresada haciendo clic en el engranaje inferior derecho.',
+                        icon: 'info',
+                        confirmButtonColor: '#2E7D32'
+                    });
                 });
         }
 
-        // CONTROLADORES DE FILTROS Y BÚSQUEDA
+        function calculateMetrics() {
+            document.getElementById("stat-total").innerText = workers.length;
+            
+            const excelentes = workers.filter(w => w.clasificacion.includes("EXCELENTE") || w.clasificacion.includes("BUENO")).length;
+            document.getElementById("stat-excelente").innerText = excelentes;
+
+            const totalDias = workers.reduce((sum, w) => sum + w.dias, 0);
+            document.getElementById("stat-prom-dias").innerText = workers.length ? (totalDias / workers.length).toFixed(1) : 0;
+
+            const totalKg = workers.reduce((sum, w) => sum + w.total_kg, 0);
+            document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
+        }
+
+        // CONTROL DE FILTROS SEGURO (CONTIENE LOS CAMPOS UNIFICADOS)
         function applyFilters() {
-            const searchVal = document.getElementById("search-input").value.toLowerCase();
-            const filterCond = document.getElementById("filter-condicion").value;
-            const filterClasif = document.getElementById("filter-clasificacion").value;
-            const filterRango = document.getElementById("filter-rango-dias").value;
+            const search = document.getElementById("search-input").value.toLowerCase().trim();
+            const condicion = document.getElementById("filter-condicion").value;
+            const clasificacion = document.getElementById("filter-clasificacion").value;
+            const rango = document.getElementById("filter-rango").value;
 
-            filteredWorkersData = rawWorkersData.filter(w => {
-                const matchesSearch = w.nombre.toLowerCase().includes(searchVal) || w.dni.toString().includes(searchVal);
-                const matchesCond = filterCond === "" || w.condicion === filterCond;
+            filteredWorkers = workers.filter(w => {
+                const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
+                const matchCond = !condicion || w.condicion === condicion;
+                const matchRango = !rango || w.rango_dias === rango;
                 
-                let matchesClasif = false;
-                if (filterClasif === "") matchesClasif = true;
-                else if (filterClasif === "EXCELENTE" && w.clasificacion.includes("EXCELENTE")) matchesClasif = true;
-                else if (filterClasif === "ESTABLE" && w.clasificacion.includes("30 a")) matchesClasif = true;
-                else if (filterClasif === "MALO" && w.clasificacion.includes("MALO")) matchesClasif = true;
+                let matchClasif = true;
+                if (clasificacion) {
+                    matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
+                }
 
-                const matchesRango = filterRango === "" || w.rango_dias === filterRango;
-
-                return matchesSearch && matchesCond && matchesClasif && matchesRango;
+                return matchSearch && matchCond && matchRango && matchClasif;
             });
 
             currentPage = 1;
@@ -437,247 +306,154 @@
             updateCharts();
         }
 
-        // ACTUALIZACIÓN DE INDICADORES ESTADÍSTICOS
-        function updateDashboardStats() {
-            document.getElementById("stat-total").innerText = rawWorkersData.length;
-            
-            // Calculamos aptos / rendimiento alto (Excelente o Estable)
-            const aptos = rawWorkersData.filter(w => !w.clasificacion.includes("MALO")).length;
-            document.getElementById("stat-aptos").innerText = aptos;
-
-            // Promedio de días laborados
-            const totalDias = rawWorkersData.reduce((acc, curr) => acc + Number(curr.dias), 0);
-            const promDias = rawWorkersData.length ? (totalDias / rawWorkersData.length).toFixed(1) : 0;
-            document.getElementById("stat-promedio-dias").innerText = promDias;
-
-            // Total cosechado
-            const totalKg = rawWorkersData.reduce((acc, curr) => acc + Number(curr.total_kg), 0);
-            document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-sm font-normal text-gray-400">KG</span>`;
-        }
-
-        // RENDERIZADO DE LA TABLA DINÁMICA
         function renderTable() {
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
+            
+            document.getElementById("table-counter").innerText = `Mostrando ${filteredWorkers.length} de ${workers.length} trabajadores`;
 
-            document.getElementById("table-counter").innerText = `Mostrando ${filteredWorkersData.length} de ${rawWorkersData.length} trabajadores`;
-
-            if (filteredWorkersData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-gray-400 text-xs">No se encontraron trabajadores con los filtros aplicados.</td></tr>`;
-                document.getElementById("page-indicator").innerText = `Página 0 de 0`;
+            if (filteredWorkers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 text-xs">Ningún trabajador coincide con la búsqueda activa.</td></tr>`;
+                document.getElementById("page-indicator").innerText = "Página 0 de 0";
                 return;
             }
 
-            const totalPages = Math.ceil(filteredWorkersData.length / rowsPerPage);
-            if (currentPage > totalPages) currentPage = totalPages || 1;
-
+            const totalPages = Math.ceil(filteredWorkers.length / rowsPerPage);
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            const paginatedData = filteredWorkersData.slice(start, end);
+            const activePageData = filteredWorkers.slice(start, end);
 
             document.getElementById("page-indicator").innerText = `Página ${currentPage} de ${totalPages}`;
 
-            paginatedData.forEach((w, index) => {
-                // Etiqueta visual para clasificación
-                let badgeClasif = "";
+            activePageData.forEach((w, i) => {
+                let badge = "";
                 if (w.clasificacion.includes("EXCELENTE")) {
-                    badgeClasif = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>Excelente</span>`;
-                } else if (w.clasificacion.includes("30 a")) {
-                    badgeClasif = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Aceptable</span>`;
+                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Excelente</span>`;
+                } else if (w.clasificacion.includes("BUENO")) {
+                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">🔵 Bueno</span>`;
+                } else if (w.clasificacion.includes("REGULAR")) {
+                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">🟠 Regular</span>`;
                 } else {
-                    badgeClasif = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Deficiente</span>`;
+                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">🔴 Malo</span>`;
                 }
 
                 const tr = document.createElement("tr");
-                tr.className = index % 2 === 0 ? "bg-white hover:bg-gray-50/80 transition" : "bg-gray-50/40 hover:bg-gray-50/80 transition";
-                
+                tr.className = i % 2 === 0 ? "bg-white hover:bg-slate-50 transition" : "bg-slate-50/40 hover:bg-slate-50 transition";
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-center">
-                        <button onclick="sendWhatsAppConvocatoria('${w.nombre}', '${w.celular}')" class="bg-green-600 hover:bg-green-700 text-white p-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition shadow-sm">
-                            <i class="fa-brands fa-whatsapp text-sm"></i> Convocar
+                        <button onclick="launchWhatsApp('${w.nombre}', '${w.celular}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-2.5 py-1 rounded-lg inline-flex items-center gap-1 transition shadow-sm">
+                            <i class="fa-brands fa-whatsapp"></i> Convocar
                         </button>
                     </td>
-                    <td class="py-3 px-4 font-mono font-medium text-gray-900">${w.dni}</td>
-                    <td class="py-3 px-4 font-medium text-gray-800">${w.nombre}</td>
-                    <td class="py-3 px-4 text-center text-xs text-gray-500">${w.condicion}</td>
+                    <td class="py-3 px-4 font-mono text-slate-900 font-medium">${w.dni}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${w.nombre}</td>
+                    <td class="py-3 px-4 text-center text-xs text-slate-500">${w.condicion}</td>
                     <td class="py-3 px-4 text-right font-medium">${w.dias}</td>
-                    <td class="py-3 px-4 text-right font-semibold text-gray-900">${w.total_kg} kg</td>
-                    <td class="py-3 px-4 text-center text-xs text-gray-500">${w.rango_dias}</td>
-                    <td class="py-3 px-4 text-center">${badgeClasif}</td>
-                    <td class="py-3 px-4 text-center font-mono text-xs text-gray-600">
-                        <a href="tel:${w.celular}" class="hover:underline text-green-700 font-medium"><i class="fa-solid fa-phone text-[10px]"></i> ${w.celular}</a>
+                    <td class="py-3 px-4 text-right font-bold text-slate-900">${w.total_kg} KG</td>
+                    <td class="py-3 px-4 text-center">${badge}</td>
+                    <td class="py-3 px-4 text-center font-mono text-xs text-emerald-700 font-semibold">
+                        <a href="tel:${w.celular}"><i class="fa-solid fa-phone"></i> ${w.celular}</a>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // CONVOCATORIA DE MENSAJE AUTOMATIZADO VÍA WHATSAPP
-        function sendWhatsAppConvocatoria(nombre, celular) {
-            const mensaje = `Hola ${nombre}, esperamos que te encuentres muy bien.\n\nTe informamos que ya ha iniciado nuestra campaña de cosecha de arándanos y nos gustaría contar con tu participación en esta nueva temporada.\n\nSi estás interesado(a), por favor comunícate con nosotros para brindarte toda la información necesaria sobre fechas de inicio, horarios y condiciones de trabajo.\n\n¡Te esperamos para seguir creciendo juntos!\n\nSaludos cordiales,\nEquipo de Recursos Humanos de Agrícola Huarmey.`;
-            
-            const urlEncoded = encodeURIComponent(mensaje);
-            const targetUrl = `https://api.whatsapp.com/send?phone=51${celular}&text=${urlEncoded}`;
-            
-            Swal.fire({
-                title: 'Confirmar Convocatoria',
-                text: `Se abrirá WhatsApp para enviar el mensaje personalizado a: ${nombre}`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#2E7D32',
-                cancelButtonColor: '#d33',
-                confirmButtonText: '<i class="fa-brands fa-whatsapp"></i> Abrir WhatsApp',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.open(targetUrl, '_blank');
-                }
-            });
+        function launchWhatsApp(nombre, celular) {
+            const txt = `Hola ${nombre},\n\nTe informamos que ha iniciado nuestra campaña de cosecha de arándanos y nos gustaría contar con tu participación.\n\nComunícate con nosotros para brindarte información sobre los traslados y condiciones.\n\nSaludos,\nRecursos Humanos Agrícola Huarmey.`;
+            window.open(`https://api.whatsapp.com/send?phone=51${celular}&text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        // ORDENAMIENTO DE COLUMNAS
-        function sortTable(columnKey) {
-            if (currentSort.column === columnKey) {
-                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        function sortTable(col) {
+            if (activeSort.col === col) {
+                activeSort.dir = activeSort.dir === 'asc' ? 'desc' : 'asc';
             } else {
-                currentSort.column = columnKey;
-                currentSort.direction = 'asc';
+                activeSort.col = col;
+                activeSort.dir = 'asc';
             }
 
-            filteredWorkersData.sort((a, b) => {
-                let valA = a[columnKey];
-                let valB = b[columnKey];
-
-                if (columnKey === 'dias' || columnKey === 'total_kg') {
-                    valA = Number(valA);
-                    valB = Number(valB);
-                }
-
-                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
-                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+            filteredWorkers.sort((a, b) => {
+                let vA = a[col];
+                let vB = b[col];
+                if (col === 'dias' || col === 'total_kg') { vA = Number(vA); vB = Number(vB); }
+                if (vA < vB) return activeSort.dir === 'asc' ? -1 : 1;
+                if (vA > vB) return activeSort.dir === 'asc' ? 1 : -1;
                 return 0;
             });
-
             renderTable();
         }
 
-        // PAGINACIÓN AUTOMÁTICA
-        function changeRowsPerPage() {
-            rowsPerPage = parseInt(document.getElementById("rows-per-page").value);
-            currentPage = 1;
-            renderTable();
-        }
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
-            }
-        }
-        function nextPage() {
-            const totalPages = Math.ceil(filteredWorkersData.length / rowsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTable();
-            }
-        }
+        function changeRowsPerPage() { rowsPerPage = parseInt(document.getElementById("rows-per-page").value); currentPage = 1; renderTable(); }
+        function prevPage() { if (currentPage > 1) { currentPage--; renderTable(); } }
+        function nextPage() { if (currentPage < Math.ceil(filteredWorkers.length / rowsPerPage)) { currentPage++; renderTable(); } }
 
-        // INICIALIZACIÓN Y RENDERIZADO DE GRÁFICOS DINÁMICOS
-        function initCharts() {
-            const ctxRendimiento = document.getElementById('chartRendimiento').getContext('2d');
-            const ctxClasificacion = document.getElementById('chartClasificacion').getContext('2d');
+        function renderCharts() {
+            const ctxBar = document.getElementById('chartRendimiento').getContext('2d');
+            const ctxPie = document.getElementById('chartClasificacion').getContext('2d');
 
-            // Agrupación para gráfico de rendimiento
-            const labels = rawWorkersData.map(w => w.nombre.split(' ')[0]);
-            const values = rawWorkersData.map(w => w.total_kg);
+            if(chartRendimiento) chartRendimiento.destroy();
+            if(chartClasificacion) chartClasificacion.destroy();
 
-            chartRendimientoInstance = new Chart(ctxRendimiento, {
+            const sample = workers.slice(0, 10);
+            chartRendimiento = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'KG Cosechados',
-                        data: values,
-                        backgroundColor: '#2E7D32',
-                        borderRadius: 6
-                    }]
+                    labels: sample.map(w => w.nombre.split(' ')[0]),
+                    datasets: [{ label: 'KG Totales', data: sample.map(w => w.total_kg), backgroundColor: '#15803d', borderRadius: 5 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Conteo para gráfico de torta de clasificación
-            const excCount = rawWorkersData.filter(w => w.clasificacion.includes("EXCELENTE")).length;
-            const estCount = rawWorkersData.filter(w => w.clasificacion.includes("30 a")).length;
-            const malCount = rawWorkersData.filter(w => w.clasificacion.includes("MALO")).length;
+            const exc = workers.filter(w => w.clasificacion.includes("EXCELENTE")).length;
+            const bue = workers.filter(w => w.clasificacion.includes("BUENO")).length;
+            const reg = workers.filter(w => w.clasificacion.includes("REGULAR")).length;
+            const mal = workers.filter(w => w.clasificacion.includes("MALO")).length;
 
-            chartClasificacionInstance = new Chart(ctxClasificacion, {
+            chartClasificacion = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Excelente (>=45)', 'Aceptable (30-38)', 'Deficiente (<30)'],
-                    datasets: [{
-                        data: [excCount, estCount, malCount],
-                        backgroundColor: ['#4CAF50', '#FFC107', '#F44336']
-                    }]
+                    labels: ['Excelente', 'Bueno', 'Regular', 'Malo'],
+                    datasets: [{ data: [exc, bue, reg, mal], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
         }
 
         function updateCharts() {
-            if (!chartRendimientoInstance || !chartClasificacionInstance) return;
+            if (!chartRendimiento || !chartClasificacion) return;
+            const sample = filteredWorkers.slice(0, 10);
+            chartRendimiento.data.labels = sample.map(w => w.nombre.split(' ')[0]);
+            chartRendimiento.data.datasets[0].data = sample.map(w => w.total_kg);
+            chartRendimiento.update();
 
-            // Actualizar barras
-            chartRendimientoInstance.data.labels = filteredWorkersData.map(w => w.nombre.split(' ')[0]);
-            chartRendimientoInstance.data.datasets[0].data = filteredWorkersData.map(w => w.total_kg);
-            chartRendimientoInstance.update();
-
-            // Actualizar torta
-            const excCount = filteredWorkersData.filter(w => w.clasificacion.includes("EXCELENTE")).length;
-            const estCount = filteredWorkersData.filter(w => w.clasificacion.includes("30 a")).length;
-            const malCount = filteredWorkersData.filter(w => w.clasificacion.includes("MALO")).length;
-
-            chartClasificacionInstance.data.datasets[0].data = [excCount, estCount, malCount];
-            chartClasificacionInstance.update();
+            const exc = filteredWorkers.filter(w => w.clasificacion.includes("EXCELENTE")).length;
+            const bue = filteredWorkers.filter(w => w.clasificacion.includes("BUENO")).length;
+            const reg = filteredWorkers.filter(w => w.clasificacion.includes("REGULAR")).length;
+            const mal = filteredWorkers.filter(w => w.clasificacion.includes("MALO")).length;
+            chartClasificacion.data.datasets[0].data = [exc, bue, reg, mal];
+            chartClasificacion.update();
         }
 
-        // EXPORTACIÓN DE ARCHIVOS AUTOMATIZADA
         function exportToExcel() {
-            const ws = XLSX.utils.json_to_sheet(filteredWorkersData);
+            const ws = XLSX.utils.json_to_sheet(filteredWorkers);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Filtro Personal");
-            XLSX.writeFile(wb, "Reporte_Trabajadores_Agricola_Huarmey.xlsx");
+            XLSX.writeFile(wb, "Reporte_Huarmey_Sincronizado.xlsx");
         }
 
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            doc.text("Reporte de Personal Evaluado - Agrícola Huarmey", 14, 15);
-            doc.setFontSize(10);
-            doc.text(`Fecha de descarga: ${new Date().toLocaleDateString()}`, 14, 22);
-
-            const tableRows = [];
-            filteredWorkersData.forEach(w => {
-                tableRows.push([w.dni, w.nombre, w.condicion, w.dias, `${w.total_kg} kg`, w.clasificacion, w.celular]);
-            });
-
+            doc.text("Consolidado de Personal - Agrícola Huarmey", 14, 15);
+            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, `${w.total_kg} KG`, w.clasificacion]);
             doc.autoTable({
-                head: [['DNI', 'Nombre', 'Condición CC', 'Días', 'Total KG', 'Clasificación', 'Celular']],
-                body: tableRows,
-                startY: 28,
-                theme: 'striped',
-                headStyles: { fillColor: [46, 125, 50] }
+                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'KG', 'Clasificación']],
+                body: rows,
+                startY: 22,
+                theme: 'grid',
+                headStyles: { fillColor: [21, 128, 61] }
             });
-
-            doc.save("Reporte_Agricola_Huarmey.pdf");
+            doc.save("Reporte_Huarmey.pdf");
         }
     </script>
 </body>
