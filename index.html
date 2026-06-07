@@ -130,7 +130,6 @@
                     <label class="text-[11px] font-bold text-slate-500 uppercase">Permanencia</label>
                     <select id="filter-rango" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
-                        <option value="1. <30 DÍAS">1. &lt;30 DÍAS</option>
                     </select>
                 </div>
             </div>
@@ -204,7 +203,6 @@
         let chartClasificacion = null;
 
         window.addEventListener("DOMContentLoaded", () => {
-            // Escuchadores de eventos para los filtros
             document.getElementById("search-input").addEventListener("input", applyFilters);
             document.getElementById("filter-condicion").addEventListener("change", applyFilters);
             document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
@@ -244,12 +242,20 @@
                     return res.json();
                 })
                 .then(data => {
-                    workers = data;
+                    // Normalizar datos eliminando espacios en blanco fantasma
+                    workers = data.map(w => {
+                        return {
+                            ...w,
+                            rango_dias: w.rango_dias ? String(w.rango_dias).replace(/\s+/g, ' ').trim() : 'N/A'
+                        };
+                    });
+                    
                     filteredWorkers = [...workers];
                     
                     statusIndicator.className = "flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200";
                     statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Sincronizado`;
                     
+                    buildPermanenciaOptions(); // Generar las opciones del selector automáticamente
                     calculateMetrics();
                     applyFilters();
                     renderCharts();
@@ -259,6 +265,24 @@
                     statusIndicator.className = "flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-200";
                     statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span>Sin conexión`;
                 });
+        }
+
+        // FUNCIÓN CLAVE: Extrae los rangos únicos reales desde tu Google Sheets
+        function buildPermanenciaOptions() {
+            const selectRango = document.getElementById("filter-rango");
+            // Mantener solo el valor inicial por defecto
+            selectRango.innerHTML = `<option value="">-- Todos --</option>`;
+            
+            // Obtener valores únicos que no estén vacíos ni sean 'N/A'
+            const uniqueRanges = [...new Set(workers.map(w => w.rango_dias))].filter(r => r && r !== 'N/A');
+            
+            // Ordenar alfabéticamente para que aparezcan organizados (1., 2., etc.)
+            uniqueRanges.sort().forEach(rangoValor => {
+                const option = document.createElement("option");
+                option.value = rangoValor;
+                option.textContent = rangoValor;
+                selectRango.appendChild(option);
+            });
         }
 
         function calculateMetrics() {
@@ -274,7 +298,6 @@
             document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
         }
 
-        // CONTROL DE FILTRADO CON CORRECCIÓN PARA PERMANENCIA
         function applyFilters() {
             const search = document.getElementById("search-input").value.toLowerCase().trim();
             const condicion = document.getElementById("filter-condicion").value;
@@ -284,7 +307,7 @@
             filteredWorkers = workers.filter(w => {
                 const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
                 const matchCond = !condicion || w.condicion === condicion;
-                const matchRango = !rango || String(w.rango_dias).trim() === rango.trim();
+                const matchRango = !rango || w.rango_dias === rango;
                 
                 let matchClasif = true;
                 if (clasificacion) {
@@ -342,7 +365,7 @@
                     <td class="py-3 px-4 font-semibold text-slate-800">${w.nombre}</td>
                     <td class="py-3 px-4 text-center text-xs text-slate-500">${w.condicion}</td>
                     <td class="py-3 px-4 text-right font-medium">${w.dias}</td>
-                    <td class="py-3 px-4 text-center text-xs font-medium text-slate-600 bg-slate-100/50 rounded-lg">${w.rango_dias || 'N/A'}</td>
+                    <td class="py-3 px-4 text-center text-xs font-medium text-slate-600 bg-slate-100/50 rounded-lg">${w.rango_dias}</td>
                     <td class="py-3 px-4 text-right font-bold text-slate-900">${w.total_kg} KG</td>
                     <td class="py-3 px-4 text-center">${badge}</td>
                     <td class="py-3 px-4 text-center font-mono text-xs text-emerald-700 font-semibold">
