@@ -88,7 +88,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                     <h3 class="font-bold text-slate-800 text-base">Filtros Avanzados de Personal</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Búsqueda reactiva por DNI, Nombre, Ruta o Desempeño</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Búsqueda reactiva sincronizada con Google Sheets</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
@@ -130,7 +130,7 @@
                     <label class="text-[11px] font-bold text-slate-500 uppercase">Permanencia</label>
                     <select id="filter-rango" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
-                        <option value="1. <30 DÍAS">1. <30 DÍAS</option>
+                        <option value="1. <30 DÍAS">1. &lt;30 DÍAS</option>
                     </select>
                 </div>
             </div>
@@ -150,6 +150,7 @@
                             <th class="py-3.5 px-4 cursor-pointer" onclick="sortTable('nombre')">Nombre Completo <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
                             <th class="py-3.5 px-4 text-center">Condición</th>
                             <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('dias')">Días <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 text-center cursor-pointer" onclick="sortTable('rango_dias')">Permanencia <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
                             <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('total_kg')">Total KG <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
                             <th class="py-3.5 px-4 text-center">Clasificación</th>
                             <th class="py-3.5 px-4 text-center">Celular</th>
@@ -157,7 +158,7 @@
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-slate-400 text-xs font-medium">
+                            <td colspan="9" class="py-12 text-center text-slate-400 text-xs font-medium">
                                 <i class="fa-solid fa-circle-notch animate-spin text-xl text-emerald-600 mb-2"></i>
                                 <p>Sincronizando con base de datos de Google Sheets...</p>
                             </td>
@@ -191,7 +192,6 @@
     </div>
 
     <script>
-        // URL de tu Apps Script actual (Guardada automáticamente en LocalStorage)
         let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyi557sP2bsB5qROs69zGxJn321bhRA1kjffIl-EuGsvpdzDQb7CirnBhPb4u8haXnd/exec";
         
         let workers = [];
@@ -204,7 +204,7 @@
         let chartClasificacion = null;
 
         window.addEventListener("DOMContentLoaded", () => {
-            // Asignar listeners nativos para evitar que dejen de responder
+            // Escuchadores de eventos para los filtros
             document.getElementById("search-input").addEventListener("input", applyFilters);
             document.getElementById("filter-condicion").addEventListener("change", applyFilters);
             document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
@@ -257,14 +257,7 @@
                 .catch(err => {
                     console.error(err);
                     statusIndicator.className = "flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-200";
-                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span>Error de Conexión`;
-                    
-                    Swal.fire({
-                        title: 'Aviso de Configuración',
-                        text: 'Verifica la URL ingresada haciendo clic en el engranaje inferior derecho.',
-                        icon: 'info',
-                        confirmButtonColor: '#2E7D32'
-                    });
+                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span>Sin conexión`;
                 });
         }
 
@@ -281,7 +274,7 @@
             document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
         }
 
-        // CONTROL DE FILTROS SEGURO (CONTIENE LOS CAMPOS UNIFICADOS)
+        // CONTROL DE FILTRADO CON CORRECCIÓN PARA PERMANENCIA
         function applyFilters() {
             const search = document.getElementById("search-input").value.toLowerCase().trim();
             const condicion = document.getElementById("filter-condicion").value;
@@ -291,7 +284,7 @@
             filteredWorkers = workers.filter(w => {
                 const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
                 const matchCond = !condicion || w.condicion === condicion;
-                const matchRango = !rango || w.rango_dias === rango;
+                const matchRango = !rango || String(w.rango_dias).trim() === rango.trim();
                 
                 let matchClasif = true;
                 if (clasificacion) {
@@ -313,7 +306,7 @@
             document.getElementById("table-counter").innerText = `Mostrando ${filteredWorkers.length} de ${workers.length} trabajadores`;
 
             if (filteredWorkers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 text-xs">Ningún trabajador coincide con la búsqueda activa.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400 text-xs">Ningún trabajador coincide con los criterios de búsqueda seleccionados.</td></tr>`;
                 document.getElementById("page-indicator").innerText = "Página 0 de 0";
                 return;
             }
@@ -349,6 +342,7 @@
                     <td class="py-3 px-4 font-semibold text-slate-800">${w.nombre}</td>
                     <td class="py-3 px-4 text-center text-xs text-slate-500">${w.condicion}</td>
                     <td class="py-3 px-4 text-right font-medium">${w.dias}</td>
+                    <td class="py-3 px-4 text-center text-xs font-medium text-slate-600 bg-slate-100/50 rounded-lg">${w.rango_dias || 'N/A'}</td>
                     <td class="py-3 px-4 text-right font-bold text-slate-900">${w.total_kg} KG</td>
                     <td class="py-3 px-4 text-center">${badge}</td>
                     <td class="py-3 px-4 text-center font-mono text-xs text-emerald-700 font-semibold">
@@ -445,9 +439,9 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("Consolidado de Personal - Agrícola Huarmey", 14, 15);
-            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, `${w.total_kg} KG`, w.clasificacion]);
+            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, w.rango_dias, `${w.total_kg} KG`, w.clasificacion]);
             doc.autoTable({
-                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'KG', 'Clasificación']],
+                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'Permanencia', 'KG', 'Clasificación']],
                 body: rows,
                 startY: 22,
                 theme: 'grid',
