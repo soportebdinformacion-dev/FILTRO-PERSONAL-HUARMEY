@@ -1,479 +1,309 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agrícola Huarmey - Portal de Consulta y Convocatoria</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cumpleaños - Agrícola Huarmey</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --azul-frusan: #005691;
+      --verde-frusan: #4CAF50;
+    }
+    .bg-frusan-azul { background-color: var(--azul-frusan); }
+    .text-frusan-azul { color: var(--azul-frusan); }
+    .border-frusan-azul { border-color: var(--azul-frusan); }
+    .bg-frusan-verde { background-color: var(--verde-frusan); }
+  </style>
 </head>
-<body class="text-gray-800 antialiased">
+<body class="bg-gray-50 font-sans min-h-screen pb-12">
 
-    <!-- CABECERA PRINCIPAL -->
-    <header class="bg-white shadow-sm border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <!-- LOGO OFICIAL EN LUGAR DEL CUADRO VERDE -->
-                <div class="w-16 h-16 flex items-center justify-center bg-slate-50 rounded-xl p-1 shadow-sm border border-slate-100">
-                    <img src="ICO FRUSAN.png" alt="Logo Agrícola Huarmey" class="w-full h-full object-contain">
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Agrícola Huarmey | Fundo Frusan</h1>
-                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Plataforma para el filtro de personal por Categorizacón y Rendimiento</p>
-                </div>
-            </div>
-            <div id="connection-status" class="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span>Cargando interfaz...</span>
-            </div>
+  <header class="bg-frusan-azul text-white shadow-md p-4 sticky top-0 z-50">
+    <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-white p-2 rounded-full w-12 h-12 flex items-center justify-center shadow">
+          <i class="fa-solid fa-wheat-awn text-2xl text-emerald-600"></i>
         </div>
-    </header>
+        <div>
+          <h1 class="text-xl font-bold tracking-wide">Agrícola Huarmey</h1>
+          <p class="text-xs text-blue-200">Fundo Frusan — Gestión de Cumpleaños</p>
+        </div>
+      </div>
+      <div class="text-center sm:text-right">
+        <p id="fecha-actual" class="text-sm font-semibold opacity-90"></p>
+        <span class="inline-flex items-center bg-green-600 text-xs px-2.5 py-0.5 rounded-full font-medium mt-1 animate-pulse">
+          <i class="fa-solid fa-sync fa-spin mr-1"></i> Sincronizado en Vivo
+        </span>
+      </div>
+    </div>
+  </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Evaluados</p>
-                    <h3 id="stat-total" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
-                </div>
-                <div class="p-3 bg-slate-50 text-slate-500 rounded-xl"><i class="fa-solid fa-users text-xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rendimiento Alto</p>
-                    <h3 id="stat-excelente" class="text-3xl font-bold text-emerald-600 mt-1">0</h3>
-                </div>
-                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Días Promedio</p>
-                    <h3 id="stat-prom-dias" class="text-3xl font-bold text-blue-600 mt-1">0</h3>
-                </div>
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-calendar text-xl"></i></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Cosechado</p>
-                    <h3 id="stat-total-kg" class="text-2xl font-bold text-amber-600 mt-1">0 <span class="text-xs font-normal text-slate-400">KG</span></h3>
-                </div>
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-basket-shopping text-xl"></i></div>
-            </div>
-        </section>
+  <audio id="audio-alerta" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
 
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
-                <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-bar text-emerald-600"></i> Producción por Trabajador (Muestra de Datos)
-                </h4>
-                <div class="relative h-60"><canvas id="chartRendimiento"></canvas></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-red-600"></i> Segmentación por Estado de Rendimiento
-                </h4>
-                <div class="relative h-60 flex items-center justify-center"><canvas id="chartClasificacion"></canvas></div>
-            </div>
-        </section>
+  <main class="container mx-auto px-4 mt-6">
+    
+    <section class="mb-8">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-bell text-yellow-500"></i> Alertas y Recordatorios (Mañana y Hoy)
+      </h2>
+      <div id="contenedor-alertas" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="col-span-full bg-white p-6 rounded-xl text-center shadow border border-gray-100 text-gray-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-frusan-azul"></i>
+          <p>Cargando registros desde Google Sheets...</p>
+        </div>
+      </div>
+    </section>
 
-        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                <div>
-                    <h3 class="font-bold text-slate-800 text-base">Filtros Avanzados de Personal</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Búsqueda reactiva sincronizada con Google Sheets</p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-file-excel"></i> Excel
-                    </button>
-                    <button onclick="exportToPDF()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-file-pdf"></i> PDF
-                    </button>
-                    <button onclick="fetchSheetData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-rotate"></i> Actualizar
-                    </button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase">Buscar Trabajador</label>
-                    <input type="text" id="search-input" placeholder="Buscar por DNI o Nombre..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase">Condición de Ruta</label>
-                    <select id="filter-condicion" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                        <option value="">-- Todos --</option>
-                        <option value="IDA Y VUELTA">IDA Y VUELTA</option>
-                        <option value="CAMPAMENTO">CAMPAMENTO</option>
-                    </select>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase">Clasificación Interna</label>
-                    <select id="filter-clasificacion" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                        <option value="">-- Todos --</option>
-                        <option value="EXCELENTE">EXCELENTE</option>
-                        <option value="BUENO">BUENO</option>
-                        <option value="REGULAR">REGULAR</option>
-                        <option value="MALO">MALO</option>
-                    </select>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase">Permanencia</label>
-                    <select id="filter-rango" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
-                        <option value="">-- Todos --</option>
-                    </select>
-                </div>
-            </div>
-        </section>
-
-        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-4 bg-slate-50/60 border-b border-slate-100 flex justify-between items-center text-xs font-semibold text-slate-500">
-                <span>CONSOLIDADO DE SEGUIMIENTO</span>
-                <span id="table-counter">Mostrando 0 trabajadores</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-slate-800 text-white text-xs font-medium uppercase tracking-wider">
-                            <th class="py-3.5 px-4 text-center">Convocatoria</th>
-                            <th class="py-3.5 px-4 cursor-pointer" onclick="sortTable('dni')">DNI / RUT <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
-                            <th class="py-3.5 px-4 cursor-pointer" onclick="sortTable('nombre')">Nombre Completo <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
-                            <th class="py-3.5 px-4 text-center">Condición</th>
-                            <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('dias')">Días <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
-                            <th class="py-3.5 px-4 text-center cursor-pointer" onclick="sortTable('rango_dias')">Permanencia <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
-                            <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('total_kg')">Total KG <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
-                            <th class="py-3.5 px-4 text-center">Clasificación</th>
-                            <th class="py-3.5 px-4 text-center">Celular</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
-                        <tr>
-                            <td colspan="9" class="py-12 text-center text-slate-400 text-xs font-medium">
-                                <i class="fa-solid fa-circle-notch animate-spin text-xl text-emerald-600 mb-2"></i>
-                                <p>Sincronizando con base de datos de Google Sheets...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                <div class="text-slate-500">
-                    Registros por página:
-                    <select id="rows-per-page" class="bg-white border rounded p-1 ml-1 focus:outline-none">
-                        <option value="15">15</option>
-                        <option value="30" selected>30</option>
-                        <option value="50">50</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="prevPage()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition">Anterior</button>
-                    <span id="page-indicator" class="font-semibold text-slate-600">Página 1 de 1</span>
-                    <button onclick="nextPage()" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition">Siguiente</button>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div class="fixed bottom-5 right-5">
-        <button onclick="openConfig()" class="bg-slate-800 hover:bg-slate-900 text-white p-3.5 rounded-full shadow-xl transition">
-            <i class="fa-solid fa-gear text-base"></i>
-        </button>
+    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div class="relative w-full sm:w-72">
+        <input type="text" id="buscador" onkeyup="filtrarContenido()" placeholder="Buscar colaborador o área..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+        <div class="absolute left-3 top-2.5 text-gray-400">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+      </div>
+      <div class="flex gap-2 text-xs font-semibold text-gray-600">
+        <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200">Total: <span id="contador-total">0</span></span>
+      </div>
     </div>
 
-    <script>
-        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyi557sP2bsB5qROs69zGxJn321bhRA1kjffIl-EuGsvpdzDQb7CirnBhPb4u8haXnd/exec";
+    <section class="mb-10">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-address-card text-frusan-azul"></i> Vista de Fichas Individuales
+      </h2>
+      <div id="grid-trabajadores" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        </div>
+    </section>
+
+    <section class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
+      <div class="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+        <h2 class="font-bold text-gray-800 flex items-center gap-2">
+          <i class="fa-solid fa-table text-frusan-azul"></i> Base de Datos Completa
+        </h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+          <thead class="bg-gray-100 text-gray-700 uppercase text-xs font-semibold">
+            <tr>
+              <th class="px-6 py-3">Colaborador</th>
+              <th class="px-6 py-3">Área</th>
+              <th class="px-6 py-3">Puesto / Cargo</th>
+              <th class="px-6 py-3">Cumpleaños</th>
+              <th class="px-6 py-3 text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cuerpo" class="divide-y divide-gray-200 text-gray-600">
+            </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let listaPersonal = [];
+
+    // Mostrar fecha de hoy en el header
+    const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('fecha-actual').innerText = new Date().toLocaleDateString('es-ES', opcionesFecha);
+
+    // Cargar datos desde Apps Script al iniciar
+    window.onload = function() {
+      google.script.run
+        .withSuccessHandler(procesarDatos)
+        .withFailureHandler(errorCarga)
+        .obtenerDatosCumpleanios();
+    };
+
+    function errorCarga(err) {
+      document.getElementById('contenedor-alertas').innerHTML = `
+        <div class="col-span-full bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-center">
+          <i class="fa-solid fa-triangle-exclamation text-xl mb-1"></i>
+          <p>Error de conexión con Google Sheets. Verifica los permisos de despliegue.</p>
+        </div>`;
+    }
+
+    function procesarDatos(datos) {
+      listaPersonal = datos;
+      document.getElementById('contador-total').innerText = listaPersonal.length;
+      renderizarComponentes(listaPersonal);
+      verificarAlertasYCumpleanios(listaPersonal);
+    }
+
+    function renderizarComponentes(lista) {
+      const grid = document.getElementById('grid-trabajadores');
+      const tabla = document.getElementById('tabla-cuerpo');
+      
+      grid.innerHTML = '';
+      tabla.innerHTML = '';
+
+      if(lista.length === 0) {
+        grid.innerHTML = '<p class="col-span-full text-center py-6 text-gray-400">No se encontraron resultados</p>';
+        return;
+      }
+
+      lista.forEach(persona => {
+        // Formatear la fecha para visualización bonita (ej: 15 de Octubre)
+        const partes = persona.cumpleanios.split('-');
+        let fechaVisual = persona.cumpleanios;
+        if(partes.length === 3) {
+          const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          fechaVisual = `${partes[2]} de ${meses[parseInt(partes[1])-1]}`;
+        }
+
+        // Crear mensaje personalizado para WhatsApp
+        const mensajeWa = encodeURIComponent(`¡Hola *${persona.colaborador}*! 👋 Te saludamos de parte de la familia de *Agrícola Huarmey - Fundo Frusan*. Queremos hacerte una cordial invitación para celebrar juntos tu cumpleaños. ¡Esperamos que pases un excelente día lleno de éxitos! 🎂🎉`);
+        const linkWhatsapp = `https://api.whatsapp.com/send?phone=51${persona.celular}&text=${mensajeWa}`;
+
+        // 1. Añadir al Grid / Tarjetas
+        grid.innerHTML += `
+          <div class="bg-white rounded-xl shadow border border-gray-100 p-5 flex flex-col justify-between hover:shadow-md transition card-item" data-nombre="${persona.colaborador}" data-area="${persona.area}">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="bg-blue-50 text-frusan-azul text-xs font-bold px-2.5 py-1 rounded-full">
+                  <i class="fa-solid fa-cake-candles mr-1"></i> ${fechaVisual}
+                </span>
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+              </div>
+              <h3 class="font-bold text-gray-800 text-sm line-clamp-2">${persona.colaborador}</h3>
+              <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-building text-gray-400 mr-1"></i>${persona.area}</p>
+              <p class="text-xs text-gray-400"><i class="fa-solid fa-briefcase text-gray-300 mr-1"></i>${persona.puesto}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <span class="text-xs text-gray-500 font-mono">${persona.celular || 'Sin Celular'}</span>
+              ${persona.celular ? `
+                <a href="${linkWhatsapp}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                  <i class="fa-brands fa-whatsapp text-sm"></i> Invitar
+                </a>
+              ` : `<span class="text-xs text-gray-300 italic">No disponible</span>`}
+            </div>
+          </div>
+        `;
+
+        // 2. Añadir a la Tabla
+        tabla.innerHTML += `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 font-medium text-gray-900">${persona.colaborador}</td>
+            <td class="px-6 py-4 text-xs">${persona.area}</td>
+            <td class="px-6 py-4 text-xs">${persona.puesto}</td>
+            <td class="px-6 py-4 text-xs font-semibold">${fechaVisual}</td>
+            <td class="px-6 py-4 text-center">
+              ${persona.celular ? `
+                <a href="${linkWhatsapp}" target="_blank" class="inline-flex items-center gap-1 bg-green-100 text-green-700 hover:bg-green-200 px-2.5 py-1 rounded text-xs font-bold transition">
+                  <i class="fa-brands fa-whatsapp"></i> Enviar WhatsApp
+                </a>
+              ` : `<span class="text-gray-400 text-xs italic">Sin Celular</span>`}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function verificarAlertasYCumpleanios(lista) {
+      const contenedorAlertas = document.getElementById('contenedor-alertas');
+      contenedorAlertas.innerHTML = '';
+
+      const hoy = new Date();
+      const mañana = new Date();
+      mañana.setDate(hoy.getDate() + 1);
+
+      let alertasEncontradas = 0;
+      let activarSonido = false;
+
+      lista.forEach(persona => {
+        if(!persona.cumpleanios) return;
         
-        let workers = [];
-        let filteredWorkers = [];
-        let currentPage = 1;
-        let rowsPerPage = 30;
-        let activeSort = { col: null, dir: 'asc' };
+        const partes = persona.cumpleanios.split('-');
+        if(partes.length !== 3) return;
+
+        const mesCumple = parseInt(partes[1]) - 1;
+        const diaCumple = parseInt(partes[2]);
+
+        const mensajeWa = encodeURIComponent(`¡Hola *${persona.colaborador}*! 👋 Te saludamos de parte de la familia de *Agrícola Huarmey - Fundo Frusan*. Queremos hacerte una cordial invitación para celebrar juntos tu cumpleaños. ¡Esperamos que pases un excelente día lleno de éxitos! 🎂🎉`);
+        const linkWhatsapp = `https://api.whatsapp.com/send?phone=51${persona.celular}&text=${mensajeWa}`;
+
+        // Alerta de un día antes (Mañana)
+        if(hoy.getMonth() === mesCumple && mañana.getDate() === diaCumple) {
+          alertasEncontradas++;
+          activarSonido = true;
+          contenedorAlertas.innerHTML += `
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex flex-col justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="p-2 bg-amber-500 text-white rounded-lg"><i class="fa-solid fa-bell-ring animate-bounce"></i></div>
+                <div>
+                  <h4 class="font-bold text-amber-800 text-sm">¡MAÑANA CUMPLE AÑOS!</h4>
+                  <p class="text-xs text-amber-900 font-semibold mt-0.5">${persona.colaborador}</p>
+                  <p class="text-xs text-amber-700">${persona.area} — ${persona.puesto}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <a href="${linkWhatsapp}" target="_blank" class="inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                  <i class="fa-brands fa-whatsapp"></i> Preparar Invitación
+                </a>
+              </div>
+            </div>
+          `;
+        }
+
+        // Alerta del mismo día (Hoy)
+        if(hoy.getMonth() === mesCumple && hoy.getDate() === diaCumple) {
+          alertasEncontradas++;
+          contenedorAlertas.innerHTML += `
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl shadow-sm flex flex-col justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="p-2 bg-emerald-500 text-white rounded-lg"><i class="fa-solid fa-cake-candles fa-bounce"></i></div>
+                <div>
+                  <h4 class="font-bold text-emerald-800 text-sm">¡HOY ES SU CUMPLEÁÑOS! 🎉</h4>
+                  <p class="text-xs text-emerald-900 font-semibold mt-0.5">${persona.colaborador}</p>
+                  <p class="text-xs text-emerald-700">${persona.area} — ${persona.puesto}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <a href="${linkWhatsapp}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                  <i class="fa-brands fa-whatsapp"></i> Enviar Saludo Hoy
+                </a>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if(alertasEncontradas === 0) {
+        contenedorAlertas.innerHTML = `
+          <div class="col-span-full bg-gray-100 text-center py-4 rounded-xl text-xs text-gray-500">
+            <i class="fa-solid fa-calendar-check mr-1"></i> No hay alertas de cumpleaños para hoy ni mañana.
+          </div>`;
+      }
+
+      // Si hay alerta de "un día antes" (mañana), reproducir la alerta sonora
+      if(activarSonido) {
+        const audio = document.getElementById('audio-alerta');
+        // El navegador exige interacción del usuario a veces para reproducir audio, intentamos reproducir de inmediato
+        audio.play().catch(e => console.log("Audio en espera de interacción del usuario."));
+      }
+    }
+
+    // Buscador instantáneo multitérmino
+    function filtrarContenido() {
+      const filtro = document.getElementById('buscador').value.toLowerCase();
+      const tarjetas = document.getElementsByClassName('card-item');
+      
+      let contador = 0;
+      for (let i = 0; i < tarjetas.length; i++) {
+        const nombre = tarjetas[i].getAttribute('data-nombre').toLowerCase();
+        const area = tarjetas[i].getAttribute('data-area').toLowerCase();
         
-        let chartRendimiento = null;
-        let chartClasificacion = null;
-
-        window.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("search-input").addEventListener("input", applyFilters);
-            document.getElementById("filter-condicion").addEventListener("change", applyFilters);
-            document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
-            document.getElementById("filter-rango").addEventListener("change", applyFilters);
-            document.getElementById("rows-per-page").addEventListener("change", changeRowsPerPage);
-            
-            fetchSheetData();
-        });
-
-        function openConfig() {
-            Swal.fire({
-                title: 'Configurar URL de Google Apps Script',
-                input: 'url',
-                inputLabel: 'Pega la URL de ejecución generada (/exec)',
-                inputValue: currentEndpoint,
-                showCancelButton: true,
-                confirmButtonColor: '#2E7D32',
-                confirmButtonText: 'Conectar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed && result.value) {
-                    localStorage.setItem("huarmey_endpoint", result.value.trim());
-                    currentEndpoint = result.value.trim();
-                    fetchSheetData();
-                }
-            });
+        if(nombre.includes(filtro) || area.includes(filtro)) {
+          tarjetas[i].style.display = "";
+          contador++;
+        } else {
+          tarjetas[i].style.display = "none";
         }
-
-        function fetchSheetData() {
-            const statusIndicator = document.getElementById("connection-status");
-            statusIndicator.className = "flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200";
-            statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>Conectando...`;
-
-            fetch(currentEndpoint)
-                .then(res => {
-                    if (!res.ok) throw new Error("Error de Red");
-                    return res.json();
-                })
-                .then(data => {
-                    // Normalizar datos eliminando espacios en blanco fantasma
-                    workers = data.map(w => {
-                        return {
-                            ...w,
-                            rango_dias: w.rango_dias ? String(w.rango_dias).replace(/\s+/g, ' ').trim() : 'N/A'
-                        };
-                    });
-                    
-                    filteredWorkers = [...workers];
-                    
-                    statusIndicator.className = "flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200";
-                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Sincronizado`;
-                    
-                    buildPermanenciaOptions(); // Generar las opciones del selector automáticamente
-                    calculateMetrics();
-                    applyFilters();
-                    renderCharts();
-                })
-                .catch(err => {
-                    console.error(err);
-                    statusIndicator.className = "flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-200";
-                    statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span>Sin conexión`;
-                });
-        }
-
-        // FUNCIÓN CLAVE: Extrae los rangos únicos reales desde tu Google Sheets
-        function buildPermanenciaOptions() {
-            const selectRango = document.getElementById("filter-rango");
-            // Mantener solo el valor inicial por defecto
-            selectRango.innerHTML = `<option value="">-- Todos --</option>`;
-            
-            // Obtener valores únicos que no estén vacíos ni sean 'N/A'
-            const uniqueRanges = [...new Set(workers.map(w => w.rango_dias))].filter(r => r && r !== 'N/A');
-            
-            // Ordenar alfabéticamente para que aparezcan organizados (1., 2., etc.)
-            uniqueRanges.sort().forEach(rangoValor => {
-                const option = document.createElement("option");
-                option.value = rangoValor;
-                option.textContent = rangoValor;
-                selectRango.appendChild(option);
-            });
-        }
-
-        function calculateMetrics() {
-            document.getElementById("stat-total").innerText = workers.length;
-            
-            const excelentes = workers.filter(w => w.clasificacion.includes("EXCELENTE") || w.clasificacion.includes("BUENO")).length;
-            document.getElementById("stat-excelente").innerText = excelentes;
-
-            const totalDias = workers.reduce((sum, w) => sum + w.dias, 0);
-            document.getElementById("stat-prom-dias").innerText = workers.length ? (totalDias / workers.length).toFixed(1) : 0;
-
-            const totalKg = workers.reduce((sum, w) => sum + w.total_kg, 0);
-            document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
-        }
-
-        function applyFilters() {
-            const search = document.getElementById("search-input").value.toLowerCase().trim();
-            const condicion = document.getElementById("filter-condicion").value;
-            const clasificacion = document.getElementById("filter-clasificacion").value;
-            const rango = document.getElementById("filter-rango").value;
-
-            filteredWorkers = workers.filter(w => {
-                const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
-                const matchCond = !condicion || w.condicion === condicion;
-                const matchRango = !rango || w.rango_dias === rango;
-                
-                let matchClasif = true;
-                if (clasificacion) {
-                    matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
-                }
-
-                return matchSearch && matchCond && matchRango && matchClasif;
-            });
-
-            currentPage = 1;
-            renderTable();
-            updateCharts();
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById("table-body");
-            tbody.innerHTML = "";
-            
-            document.getElementById("table-counter").innerText = `Mostrando ${filteredWorkers.length} de ${workers.length} trabajadores`;
-
-            if (filteredWorkers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400 text-xs">Ningún trabajador coincide con los criterios de búsqueda seleccionados.</td></tr>`;
-                document.getElementById("page-indicator").innerText = "Página 0 de 0";
-                return;
-            }
-
-            const totalPages = Math.ceil(filteredWorkers.length / rowsPerPage);
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const activePageData = filteredWorkers.slice(start, end);
-
-            document.getElementById("page-indicator").innerText = `Página ${currentPage} de ${totalPages}`;
-
-            activePageData.forEach((w, i) => {
-                let badge = "";
-                if (w.clasificacion.includes("EXCELENTE")) {
-                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Excelente</span>`;
-                } else if (w.clasificacion.includes("BUENO")) {
-                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">🔵 Bueno</span>`;
-                } else if (w.clasificacion.includes("REGULAR")) {
-                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">🟠 Regular</span>`;
-                } else {
-                    badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">🔴 Malo</span>`;
-                }
-
-                const tr = document.createElement("tr");
-                tr.className = i % 2 === 0 ? "bg-white hover:bg-slate-50 transition" : "bg-slate-50/40 hover:bg-slate-50 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="launchWhatsApp('${w.nombre}', '${w.celular}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-2.5 py-1 rounded-lg inline-flex items-center gap-1 transition shadow-sm">
-                            <i class="fa-brands fa-whatsapp"></i> Convocar
-                        </button>
-                    </td>
-                    <td class="py-3 px-4 font-mono text-slate-900 font-medium">${w.dni}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-800">${w.nombre}</td>
-                    <td class="py-3 px-4 text-center text-xs text-slate-500">${w.condicion}</td>
-                    <td class="py-3 px-4 text-right font-medium">${w.dias}</td>
-                    <td class="py-3 px-4 text-center text-xs font-medium text-slate-600 bg-slate-100/50 rounded-lg">${w.rango_dias}</td>
-                    <td class="py-3 px-4 text-right font-bold text-slate-900">${w.total_kg} KG</td>
-                    <td class="py-3 px-4 text-center">${badge}</td>
-                    <td class="py-3 px-4 text-center font-mono text-xs text-emerald-700 font-semibold">
-                        <a href="tel:${w.celular}"><i class="fa-solid fa-phone"></i> ${w.celular}</a>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function launchWhatsApp(nombre, celular) {
-            const txt = `Hola ${nombre},\n\nTe informamos que ha iniciado nuestra campaña de cosecha de arándanos y nos gustaría contar con tu participación.\n\nComunícate con nosotros para brindarte información sobre los traslados y condiciones.\n\nSaludos,\nRecursos Humanos Agrícola Huarmey.`;
-            window.open(`https://api.whatsapp.com/send?phone=51${celular}&text=${encodeURIComponent(txt)}`, '_blank');
-        }
-
-        function sortTable(col) {
-            if (activeSort.col === col) {
-                activeSort.dir = activeSort.dir === 'asc' ? 'desc' : 'asc';
-            } else {
-                activeSort.col = col;
-                activeSort.dir = 'asc';
-            }
-
-            filteredWorkers.sort((a, b) => {
-                let vA = a[col];
-                let vB = b[col];
-                if (col === 'dias' || col === 'total_kg') { vA = Number(vA); vB = Number(vB); }
-                if (vA < vB) return activeSort.dir === 'asc' ? -1 : 1;
-                if (vA > vB) return activeSort.dir === 'asc' ? 1 : -1;
-                return 0;
-            });
-            renderTable();
-        }
-
-        function changeRowsPerPage() { rowsPerPage = parseInt(document.getElementById("rows-per-page").value); currentPage = 1; renderTable(); }
-        function prevPage() { if (currentPage > 1) { currentPage--; renderTable(); } }
-        function nextPage() { if (currentPage < Math.ceil(filteredWorkers.length / rowsPerPage)) { currentPage++; renderTable(); } }
-
-        function renderCharts() {
-            const ctxBar = document.getElementById('chartRendimiento').getContext('2d');
-            const ctxPie = document.getElementById('chartClasificacion').getContext('2d');
-
-            if(chartRendimiento) chartRendimiento.destroy();
-            if(chartClasificacion) chartClasificacion.destroy();
-
-            const sample = workers.slice(0, 10);
-            chartRendimiento = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: sample.map(w => w.nombre.split(' ')[0]),
-                    datasets: [{ label: 'KG Totales', data: sample.map(w => w.total_kg), backgroundColor: '#15803d', borderRadius: 5 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            const exc = workers.filter(w => w.clasificacion.includes("EXCELENTE")).length;
-            const bue = workers.filter(w => w.clasificacion.includes("BUENO")).length;
-            const reg = workers.filter(w => w.clasificacion.includes("REGULAR")).length;
-            const mal = workers.filter(w => w.clasificacion.includes("MALO")).length;
-
-            chartClasificacion = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Excelente', 'Bueno', 'Regular', 'Malo'],
-                    datasets: [{ data: [exc, bue, reg, mal], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        function updateCharts() {
-            if (!chartRendimiento || !chartClasificacion) return;
-            const sample = filteredWorkers.slice(0, 10);
-            chartRendimiento.data.labels = sample.map(w => w.nombre.split(' ')[0]);
-            chartRendimiento.data.datasets[0].data = sample.map(w => w.total_kg);
-            chartRendimiento.update();
-
-            const exc = filteredWorkers.filter(w => w.clasificacion.includes("EXCELENTE")).length;
-            const bue = filteredWorkers.filter(w => w.clasificacion.includes("BUENO")).length;
-            const reg = filteredWorkers.filter(w => w.clasificacion.includes("REGULAR")).length;
-            const mal = filteredWorkers.filter(w => w.clasificacion.includes("MALO")).length;
-            chartClasificacion.data.datasets[0].data = [exc, bue, reg, mal];
-            chartClasificacion.update();
-        }
-
-        function exportToExcel() {
-            const ws = XLSX.utils.json_to_sheet(filteredWorkers);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Filtro Personal");
-            XLSX.writeFile(wb, "Reporte_Huarmey_Sincronizado.xlsx");
-        }
-
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("Consolidado de Personal - Agrícola Huarmey", 14, 15);
-            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, w.rango_dias, `${w.total_kg} KG`, w.clasificacion]);
-            doc.autoTable({
-                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'Permanencia', 'KG', 'Clasificación']],
-                body: rows,
-                startY: 22,
-                theme: 'grid',
-                headStyles: { fillColor: [21, 128, 61] }
-            });
-            doc.save("Reporte_Huarmey.pdf");
-        }
-    </script>
+      }
+      document.getElementById('contador-total').innerText = contador;
+    }
+  </script>
 </body>
 </html>
