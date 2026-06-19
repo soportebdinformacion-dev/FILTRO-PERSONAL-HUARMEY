@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-500 uppercase">Buscar Trabajador</label>
                     <input type="text" id="search-input" placeholder="Buscar por DNI o Nombre..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
@@ -130,6 +130,14 @@
                     <label class="text-[11px] font-bold text-slate-500 uppercase">Permanencia</label>
                     <select id="filter-rango" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
                         <option value="">-- Todos --</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase">Estado Registro</label>
+                    <select id="filter-estado" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        <option value="">-- Todos --</option>
+                        <option value="EMPADRONADO">EMPADRONADO</option>
+                        <option value="NO EMPADRONADO">NO EMPADRONADO</option>
                     </select>
                 </div>
             </div>
@@ -192,7 +200,7 @@
     </div>
 
     <script>
-        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbz955pVJMlYhIu6IjNTNvWtULJ8284LyiJhtNnHNDFIxLK3YfUKHxQfAJXOSzwYcgTt/exec";
+        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyi557sP2bsB5qROs69zGxJn321bhRA1kjffIl-EuGsvpdzDQb7CirnBhPb4u8haXnd/exec";
         
         let workers = [];
         let filteredWorkers = [];
@@ -208,6 +216,8 @@
             document.getElementById("filter-condicion").addEventListener("change", applyFilters);
             document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
             document.getElementById("filter-rango").addEventListener("change", applyFilters);
+            // Escuchador para el nuevo filtro de Estado
+            document.getElementById("filter-estado").addEventListener("change", applyFilters);
             document.getElementById("rows-per-page").addEventListener("change", changeRowsPerPage);
             
             fetchSheetData();
@@ -297,6 +307,7 @@
             const condicion = document.getElementById("filter-condicion").value;
             const clasificacion = document.getElementById("filter-clasificacion").value;
             const rango = document.getElementById("filter-rango").value;
+            const estado = document.getElementById("filter-estado").value; // <-- Captura del nuevo filtro
 
             filteredWorkers = workers.filter(w => {
                 const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
@@ -308,7 +319,18 @@
                     matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
                 }
 
-                return matchSearch && matchCond && matchRango && matchClasif;
+                // Lógica reactiva para filtrar por Estado de Registro
+                let matchEstado = true;
+                if (estado) {
+                    const isEmpadronado = String(w.estado_registro).toUpperCase().includes("EMPADRONADO") && !String(w.estado_registro).toUpperCase().includes("NO");
+                    if (estado === "EMPADRONADO") {
+                        matchEstado = isEmpadronado;
+                    } else if (estado === "NO EMPADRONADO") {
+                        matchEstado = !isEmpadronado;
+                    }
+                }
+
+                return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
             });
 
             currentPage = 1;
@@ -347,7 +369,6 @@
                     badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">🔴 Malo</span>`;
                 }
 
-                // Estilo personalizado de badge para el Estado de Registro
                 let estadoBadge = "";
                 if (String(w.estado_registro).toUpperCase().includes("EMPADRONADO") && !String(w.estado_registro).toUpperCase().includes("NO")) {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">EMPADRONADO</span>`;
