@@ -200,7 +200,7 @@
     </div>
 
     <script>
-        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyaOY4h-5TzmwMNVrPCcgnT54l4BrVDTdVyZJ542z3RKv-JT_sa2DXylw4tbmQj5wYf/exec";
+        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbwXfbyqUdPUfEs1BivOBI-i65BaQG5qv6z9-BanzrMV1oeiCT4yWNhRURXveLIyBBef/exec";
         
         let workers = [];
         let filteredWorkers = [];
@@ -255,7 +255,7 @@
                     workers = data.map(w => {
                         return {
                             dni: w.dni || w.rut || 'S/D',
-                            nombre: w.nombre ? String(w.nombre).replace(/\s+/g, ' ').trim() : 'SIN NOMBRE',
+                            nombre: w.nombre ? String(w.nombre).trim() : 'SIN NOMBRE',
                             condicion: w.condicion || 'IDA Y VUELTA',
                             dias: parseInt(w.dias) || 0,
                             total_kg: parseInt(w.total_kg) || 0,
