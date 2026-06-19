@@ -309,37 +309,37 @@
         }
 
         function applyFilters() {
-    const search = document.getElementById("search-input").value.toLowerCase().trim();
-    const condicion = document.getElementById("filter-condicion").value;
-    const clasificacion = document.getElementById("filter-clasificacion").value;
-    const rango = document.getElementById("filter-rango").value;
+            const search = document.getElementById("search-input").value.toLowerCase().trim();
+            const condicion = document.getElementById("filter-condicion").value;
+            const clasificacion = document.getElementById("filter-clasificacion").value;
+            const rango = document.getElementById("filter-rango").value;
     
-    // CORRECCIÓN: Capturamos el ID exacto del select del HTML ("filter-estado")
-    const estado = document.getElementById("filter-estado").value;
+            // Vinculación correcta con el ID del menú desplegable del HTML
+            const estado = document.getElementById("filter-estado").value;
 
-    filteredWorkers = workers.filter(w => {
-        const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
-        const matchCond = !condicion || w.condicion === condicion;
-        const matchRango = !rango || w.rango_dias === rango;
+            filteredWorkers = workers.filter(w => {
+            const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
+            const matchCond = !condicion || w.condicion === condicion;
+            const matchRango = !rango || w.rango_dias === rango;
         
-        let matchClasif = true;
-        if (clasificacion) {
+            let matchClasif = true;
+            if (clasificacion) {
             matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
-        }
+            }
 
-        // CORRECCIÓN: Evaluamos de forma estricta contra la propiedad del objeto
-        let matchEstado = true;
-        if (estado) {
+            // Filtro activo para EMPADRONADO / NO EMPADRONADO
+            let matchEstado = true;
+            if (estado) {
             matchEstado = String(w.estado_registro).toUpperCase().includes(estado.toUpperCase());
-        }
+            }
 
-        return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
-    });
+           return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
+            });
 
-    currentPage = 1;
-    renderTable();
-    updateCharts();
-}
+        currentPage = 1;
+        renderTable();
+        updateCharts();
+    }
 
         function renderTable() {
             const tbody = document.getElementById("table-body");
