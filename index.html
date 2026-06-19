@@ -18,7 +18,6 @@
 </head>
 <body class="text-gray-800 antialiased">
 
-    <!-- CABECERA PRINCIPAL -->
     <header class="bg-white shadow-sm border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -39,7 +38,6 @@
 
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
         
-        <!-- TARJETAS DE MÉTRICAS -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
@@ -71,7 +69,6 @@
             </div>
         </section>
 
-        <!-- GRÁFICOS -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
                 <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
@@ -87,7 +84,6 @@
             </div>
         </section>
 
-        <!-- FILTROS -->
         <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
@@ -147,7 +143,6 @@
             </div>
         </section>
 
-        <!-- TABLA CONSOLIDADA -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-4 bg-slate-50/60 border-b border-slate-100 flex justify-between items-center text-xs font-semibold text-slate-500">
                 <span>CONSOLIDADO DE SEGUIMIENTO</span>
@@ -165,7 +160,7 @@
                             <th class="py-3.5 px-4 text-center cursor-pointer" onclick="sortTable('rango_dias')">Permanencia <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
                             <th class="py-3.5 px-4 text-right cursor-pointer" onclick="sortTable('total_kg')">Total KG <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
                             <th class="py-3.5 px-4 text-center">Clasificación</th>
-                            <th class="py-3.5 px-4 text-center cursor-pointer" onclick="sortTable('estado_registro')">Estado Registro <i class="fa-solid fa-sort ml-1 opacity-40"></i></th>
+                            <th class="py-3.5 px-4 text-center">Estado Registro</th>
                             <th class="py-3.5 px-4 text-center">Celular</th>
                         </tr>
                     </thead>
@@ -180,7 +175,6 @@
                 </table>
             </div>
 
-            <!-- PAGINACIÓN -->
             <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
                 <div class="text-slate-500">
                     Registros por página:
@@ -199,7 +193,6 @@
         </section>
     </main>
 
-    <!-- BOTÓN DE CONFIGURACIÓN -->
     <div class="fixed bottom-5 right-5">
         <button onclick="openConfig()" class="bg-slate-800 hover:bg-slate-900 text-white p-3.5 rounded-full shadow-xl transition">
             <i class="fa-solid fa-gear text-base"></i>
@@ -207,7 +200,7 @@
     </div>
 
     <script>
-        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbxtWZK-yaWdF7INMfsvCyxY0kCyGBKZZaUinylOswB-3p7NhjvQ8hc1akbjqHWNNpNX/exec";
+        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyaOY4h-5TzmwMNVrPCcgnT54l4BrVDTdVyZJ542z3RKv-JT_sa2DXylw4tbmQj5wYf/exec";
         
         let workers = [];
         let filteredWorkers = [];
@@ -262,14 +255,14 @@
                     workers = data.map(w => {
                         return {
                             dni: w.dni || w.rut || 'S/D',
-                            nombre: w.nombre || 'TRABAJADOR SIN NOMBRE',
+                            nombre: w.nombre ? String(w.nombre).replace(/\s+/g, ' ').trim() : 'SIN NOMBRE',
                             condicion: w.condicion || 'IDA Y VUELTA',
                             dias: parseInt(w.dias) || 0,
                             total_kg: parseInt(w.total_kg) || 0,
-                            rango_dias: w.rango_dias ? String(w.rango_dias).trim() : 'N/A',
+                            rango_dias: w.rango_dias ? String(w.rango_dias).replace(/\s+/g, ' ').trim() : 'N/A',
                             clasificacion: w.clasificacion || 'MALO',
                             celular: w.celular || '',
-                            estado_registro: w.estado_registro || 'NO EMPADRONADO'
+                            estado_registro: w.estado_registro ? String(w.estado_registro).trim() : 'NO EMPADRONADO'
                         };
                     });
                     
@@ -278,7 +271,7 @@
                     statusIndicator.className = "flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-200";
                     statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Sincronizado`;
                     
-                    buildPermanenciaOptions();
+                    buildPermanenciaOptions(); 
                     calculateMetrics();
                     applyFilters();
                     renderCharts();
@@ -315,17 +308,12 @@
             document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
         }
 
-        function isEmpadronadoTxt(txt) {
-            const val = String(txt).toUpperCase().trim();
-            return val.includes("EMPADRONADO") && !val.includes("NO");
-        }
-
         function applyFilters() {
             const search = document.getElementById("search-input").value.toLowerCase().trim();
             const condicion = document.getElementById("filter-condicion").value;
             const clasificacion = document.getElementById("filter-clasificacion").value;
             const rango = document.getElementById("filter-rango").value;
-            const estado = document.getElementById("filter-estado").value; 
+            const estado = document.getElementById("filter-estado").value;
 
             filteredWorkers = workers.filter(w => {
                 const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
@@ -339,12 +327,7 @@
 
                 let matchEstado = true;
                 if (estado) {
-                    const check = isEmpadronadoTxt(w.estado_registro);
-                    if (estado === "EMPADRONADO") {
-                        matchEstado = check;
-                    } else if (estado === "NO EMPADRONADO") {
-                        matchEstado = !check;
-                    }
+                    matchEstado = String(w.estado_registro).toUpperCase().includes(estado);
                 }
 
                 return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
@@ -387,10 +370,10 @@
                 }
 
                 let estadoBadge = "";
-                if (isEmpadronadoTxt(w.estado_registro)) {
-                    estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">EMPADRONADO</span>`;
-                } else {
+                if (String(w.estado_registro).toUpperCase().includes("NO EMPADRONADO")) {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">NO EMPADRONADO</span>`;
+                } else {
+                    estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">EMPADRONADO</span>`;
                 }
 
                 const tr = document.createElement("tr");
@@ -418,8 +401,8 @@
         }
 
         function launchWhatsApp(nombre, celular) {
-            if(!celular) {
-                Swal.fire('Atención', 'Este trabajador no tiene registrado un número celular.', 'warning');
+            if (!celular || celular === 'S/N') {
+                Swal.fire('Atención', 'Este trabajador no tiene registrado un número celular válido.', 'warning');
                 return;
             }
             const txt = `Hola ${nombre},\n\nTe informamos que ha iniciado nuestra campaña de cosecha de arándanos y nos gustaría contar con tu participación.\n\nComunícate con nosotros para brindarte información sobre los traslados y condiciones.\n\nSaludos,\nRecursos Humanos Agrícola Huarmey.`;
@@ -507,9 +490,9 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.text("Consolidado de Personal - Agrícola Huarmey", 14, 15);
-            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, w.rango_dias, `${w.total_kg} KG`, w.clasificacion]);
+            const rows = filteredWorkers.map(w => [w.dni, w.nombre, w.condicion, w.dias, w.rango_dias, `${w.total_kg} KG`, w.clasificacion, w.estado_registro]);
             doc.autoTable({
-                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'Permanencia', 'KG', 'Clasificación']],
+                head: [['DNI', 'Nombre Trabajador', 'Ruta', 'Días', 'Permanencia', 'KG', 'Clasificación', 'Estado']],
                 body: rows,
                 startY: 22,
                 theme: 'grid',
