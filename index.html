@@ -18,6 +18,7 @@
 </head>
 <body class="text-gray-800 antialiased">
 
+    <!-- CABECERA PRINCIPAL -->
     <header class="bg-white shadow-sm border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -103,6 +104,7 @@
                 </div>
             </div>
 
+            <!-- SELECTORES EN FILA -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-500 uppercase">Buscar Trabajador</label>
@@ -200,7 +202,7 @@
     </div>
 
     <script>
-        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbzPzzUd52c0mmNTFJ_w2AX8tQH3c_D7IPcrGX6Z12RnH1cQDHhbiWIfg8ul6rGdUiNT/exec";
+        let currentEndpoint = localStorage.getItem("huarmey_endpoint") || "https://script.google.com/macros/s/AKfycbyi557sP2bsB5qROs69zGxJn321bhRA1kjffIl-EuGsvpdzDQb7CirnBhPb4u8haXnd/exec";
         
         let workers = [];
         let filteredWorkers = [];
@@ -216,7 +218,7 @@
             document.getElementById("filter-condicion").addEventListener("change", applyFilters);
             document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
             document.getElementById("filter-rango").addEventListener("change", applyFilters);
-            document.getElementById("filter-estado").addEventListener("change", applyFilters); // Escuchador del nuevo filtro
+            document.getElementById("filter-estado").addEventListener("change", applyFilters);
             document.getElementById("rows-per-page").addEventListener("change", changeRowsPerPage);
             
             fetchSheetData();
@@ -301,6 +303,11 @@
             document.getElementById("stat-total-kg").innerHTML = `${totalKg.toLocaleString()} <span class="text-xs font-normal text-slate-400">KG</span>`;
         }
 
+        function isEmpadronadoTxt(txt) {
+            const val = String(txt).toUpperCase().trim();
+            return val.includes("EMPADRONADO") && !val.includes("NO");
+        }
+
         function applyFilters() {
             const search = document.getElementById("search-input").value.toLowerCase().trim();
             const condicion = document.getElementById("filter-condicion").value;
@@ -318,14 +325,14 @@
                     matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
                 }
 
-                // Filtrado dinámico usando la variable real sincronizada
+                // Filtrado con lógica flexible e insensible a mayúsculas
                 let matchEstado = true;
                 if (estado) {
-                    const valorRegistro = String(w.estado_registro).toUpperCase().trim();
+                    const check = isEmpadronadoTxt(w.estado_registro);
                     if (estado === "EMPADRONADO") {
-                        matchEstado = (valorRegistro === "EMPADRONADO");
+                        matchEstado = check;
                     } else if (estado === "NO EMPADRONADO") {
-                        matchEstado = (valorRegistro === "NO EMPADRONADO" || valorRegistro === "");
+                        matchEstado = !check;
                     }
                 }
 
@@ -368,9 +375,9 @@
                     badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">🔴 Malo</span>`;
                 }
 
-                // Renderizado condicional exacto del badge de Estado
+                // Renderizado condicional exacto usando la función de limpieza
                 let estadoBadge = "";
-                if (String(w.estado_registro).toUpperCase().trim() === "EMPADRONADO") {
+                if (isEmpadronadoTxt(w.estado_registro)) {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">EMPADRONADO</span>`;
                 } else {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">NO EMPADRONADO</span>`;
