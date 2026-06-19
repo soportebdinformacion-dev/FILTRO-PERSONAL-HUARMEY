@@ -216,8 +216,7 @@
             document.getElementById("filter-condicion").addEventListener("change", applyFilters);
             document.getElementById("filter-clasificacion").addEventListener("change", applyFilters);
             document.getElementById("filter-rango").addEventListener("change", applyFilters);
-            // Escuchador para el nuevo filtro de Estado
-            document.getElementById("filter-estado").addEventListener("change", applyFilters);
+            document.getElementById("filter-estado").addEventListener("change", applyFilters); // Escuchador del nuevo filtro
             document.getElementById("rows-per-page").addEventListener("change", changeRowsPerPage);
             
             fetchSheetData();
@@ -307,7 +306,7 @@
             const condicion = document.getElementById("filter-condicion").value;
             const clasificacion = document.getElementById("filter-clasificacion").value;
             const rango = document.getElementById("filter-rango").value;
-            const estado = document.getElementById("filter-estado").value; // <-- Captura del nuevo filtro
+            const estado = document.getElementById("filter-estado").value; 
 
             filteredWorkers = workers.filter(w => {
                 const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
@@ -319,14 +318,14 @@
                     matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
                 }
 
-                // Lógica reactiva para filtrar por Estado de Registro
+                // Filtrado dinámico usando la variable real sincronizada
                 let matchEstado = true;
                 if (estado) {
-                    const isEmpadronado = String(w.estado_registro).toUpperCase().includes("EMPADRONADO") && !String(w.estado_registro).toUpperCase().includes("NO");
+                    const valorRegistro = String(w.estado_registro).toUpperCase().trim();
                     if (estado === "EMPADRONADO") {
-                        matchEstado = isEmpadronado;
+                        matchEstado = (valorRegistro === "EMPADRONADO");
                     } else if (estado === "NO EMPADRONADO") {
-                        matchEstado = !isEmpadronado;
+                        matchEstado = (valorRegistro === "NO EMPADRONADO" || valorRegistro === "");
                     }
                 }
 
@@ -369,8 +368,9 @@
                     badge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">🔴 Malo</span>`;
                 }
 
+                // Renderizado condicional exacto del badge de Estado
                 let estadoBadge = "";
-                if (String(w.estado_registro).toUpperCase().includes("EMPADRONADO") && !String(w.estado_registro).toUpperCase().includes("NO")) {
+                if (String(w.estado_registro).toUpperCase().trim() === "EMPADRONADO") {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">EMPADRONADO</span>`;
                 } else {
                     estadoBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">NO EMPADRONADO</span>`;
