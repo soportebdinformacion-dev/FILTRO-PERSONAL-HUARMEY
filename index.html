@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agrícola Huarmey - Portal de Consulta de cosecha con rendimiento</title>
+    <title>Agrícola Huarmey - Portal de Consulta y Convocatoria</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -246,7 +246,13 @@
             statusIndicator.className = "flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200";
             statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>Conectando...`;
 
-            fetch(currentEndpoint)
+            // AGREGAMOS UN TIMESTAMP PARA EVITAR EL CACHÉ DEL NAVEGADOR
+            const cacheBuster = `?_=${new Date().getTime()}`;
+            const urlWithNoCache = currentEndpoint.includes('?') 
+                ? `${currentEndpoint}&_=${new Date().getTime()}` 
+                : `${currentEndpoint}${cacheBuster}`;
+
+            fetch(urlWithNoCache)
                 .then(res => {
                     if (!res.ok) throw new Error("Error de Red");
                     return res.json();
@@ -309,35 +315,34 @@
         }
 
         function applyFilters() {
-    const search = document.getElementById("search-input").value.toLowerCase().trim();
-    const condicion = document.getElementById("filter-condicion").value;
-    const clasificacion = document.getElementById("filter-clasificacion").value;
-    const rango = document.getElementById("filter-rango").value;
-    const estado = document.getElementById("filter-estado").value;
+            const search = document.getElementById("search-input").value.toLowerCase().trim();
+            const condicion = document.getElementById("filter-condicion").value;
+            const clasificacion = document.getElementById("filter-clasificacion").value;
+            const rango = document.getElementById("filter-rango").value;
+            const estado = document.getElementById("filter-estado").value;
 
-    filteredWorkers = workers.filter(w => {
-        const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
-        const matchCond = !condicion || w.condicion === condicion;
-        const matchRango = !rango || w.rango_dias === rango;
-        
-        let matchClasif = true;
-        if (clasificacion) {
-            matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
+            filteredWorkers = workers.filter(w => {
+                const matchSearch = String(w.nombre).toLowerCase().includes(search) || String(w.dni).includes(search);
+                const matchCond = !condicion || w.condicion === condicion;
+                const matchRango = !rango || w.rango_dias === rango;
+                
+                let matchClasif = true;
+                if (clasificacion) {
+                    matchClasif = String(w.clasificacion).toUpperCase().includes(clasificacion);
+                }
+
+                let matchEstado = true;
+                if (estado) {
+                    matchEstado = String(w.estado_registro).toUpperCase().trim() === estado.toUpperCase().trim();
+                }
+
+                return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
+            });
+
+            currentPage = 1;
+            renderTable();
+            updateCharts();
         }
-
-        // CORRECCIÓN DE ESPACIOS: Limpiamos espacios ocultos con .trim() en el dato de la celda
-        let matchEstado = true;
-        if (estado) {
-            matchEstado = String(w.estado_registro).toUpperCase().trim() === estado.toUpperCase().trim();
-        }
-
-        return matchSearch && matchCond && matchRango && matchClasif && matchEstado;
-    });
-
-    currentPage = 1;
-    renderTable();
-    updateCharts();
-}
 
         function renderTable() {
             const tbody = document.getElementById("table-body");
