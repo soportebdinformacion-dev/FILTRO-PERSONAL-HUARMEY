@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-slate-900 tracking-tight">Agrícola Huarmey | Fundo Frusan</h1>
-                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Plataforma para el filtro de personal por Categorizacón y Rendimiento</p>
+                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Plataforma para el filtro de personal por Categorización y Rendimiento</p>
                 </div>
             </div>
             <div id="connection-status" class="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200">
@@ -222,6 +222,7 @@
             fetchSheetData();
         });
 
+        // Configuración de endpoint sin alteraciones
         function openConfig() {
             Swal.fire({
                 title: 'Configurar URL de Google Apps Script',
@@ -241,16 +242,17 @@
             });
         }
 
+        // FUNCIÓN MODIFICADA CON EL MECANISMO CACHE-BUSTER REQUERIDO
         function fetchSheetData() {
             const statusIndicator = document.getElementById("connection-status");
             statusIndicator.className = "flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200";
             statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>Conectando...`;
 
-            // AGREGAMOS UN TIMESTAMP PARA EVITAR EL CACHÉ DEL NAVEGADOR
-            const cacheBuster = `?_=${new Date().getTime()}`;
+            // Generamos un parámetro único basado en el tiempo para romper el caché del navegador convencional
+            const cacheBuster = `_=${new Date().getTime()}`;
             const urlWithNoCache = currentEndpoint.includes('?') 
-                ? `${currentEndpoint}&_=${new Date().getTime()}` 
-                : `${currentEndpoint}${cacheBuster}`;
+                ? `${currentEndpoint}&${cacheBuster}` 
+                : `${currentEndpoint}?${cacheBuster}`;
 
             fetch(urlWithNoCache)
                 .then(res => {
