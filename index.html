@@ -222,7 +222,6 @@
             fetchSheetData();
         });
 
-        // Configuración de endpoint sin alteraciones
         function openConfig() {
             Swal.fire({
                 title: 'Configurar URL de Google Apps Script',
@@ -242,19 +241,19 @@
             });
         }
 
-        // FUNCIÓN MODIFICADA CON EL MECANISMO CACHE-BUSTER REQUERIDO
         function fetchSheetData() {
             const statusIndicator = document.getElementById("connection-status");
             statusIndicator.className = "flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-200";
             statusIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>Conectando...`;
 
-            // Generamos un parámetro único basado en el tiempo para romper el caché del navegador convencional
+            // Generamos un parámetro único basado en el tiempo
             const cacheBuster = `_=${new Date().getTime()}`;
             const urlWithNoCache = currentEndpoint.includes('?') 
                 ? `${currentEndpoint}&${cacheBuster}` 
                 : `${currentEndpoint}?${cacheBuster}`;
 
-            fetch(urlWithNoCache)
+            // SOLUCIÓN INTEGRADA: Agregamos { cache: "no-store" } para forzar la omisión del caché profundo del navegador/SW
+            fetch(urlWithNoCache, { cache: "no-store" })
                 .then(res => {
                     if (!res.ok) throw new Error("Error de Red");
                     return res.json();
